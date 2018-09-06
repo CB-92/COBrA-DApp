@@ -5,6 +5,7 @@ contract Catalog {
     address public creator;
     uint premiumTime;
     uint premiumPrice;
+    uint public linkedContents;
     bytes32[] contentList;
     uint public paymentDelay;
     uint allTheViews;
@@ -28,6 +29,7 @@ contract Catalog {
         premiumPrice = 500;
         paymentDelay = 5;
         allTheViews = 0;
+        linkedContents = 0;
     }
 
     /* events */
@@ -143,6 +145,7 @@ contract Catalog {
         addedContents[_title].isLinked = true;
         addedContents[_title].averageRating = 0;
         addedContents[_title].requestedPrice = _requestedPrice;
+        linkedContents++;
         emit NewLinkedContent(_title);
     }
 
