@@ -1,6 +1,7 @@
 App = {
   web3Provider: null,
   contracts: {},
+  catalogAddress: null,
 
   init: function() {
     return App.initWeb3();
@@ -28,9 +29,32 @@ App = {
       App.contracts.Catalog = TruffleContract(catalog);
       // Connect provider to interact with contract
       App.contracts.Catalog.setProvider(App.web3Provider);
-      console.log("Contract initialized");
-
-      return App.render();
+      console.log("Catalog contract initialized");
+      $.getJSON("BookContentManagement.json", function (book) {
+        console.log("Book json loaded");
+        // Instantiate a new truffle contract from the artifact
+        App.contracts.BookContentManagement = TruffleContract(book);
+        // Connect provider to interact with contract
+        App.contracts.BookContentManagement.setProvider(App.web3Provider);
+        console.log("BookContentManagement contract initialized");
+        $.getJSON("MovieContentManagement.json", function (movie) {
+          console.log("Movie json loaded");
+          // Instantiate a new truffle contract from the artifact
+          App.contracts.MovieContentManagement = TruffleContract(movie);
+          // Connect provider to interact with contract
+          App.contracts.MovieContentManagement.setProvider(App.web3Provider);
+          console.log("MovieContentManagement contract initialized");
+          $.getJSON("MusicContentManagement.json", function (music) {
+            console.log("Music json loaded");
+            // Instantiate a new truffle contract from the artifact
+            App.contracts.MusicContentManagement = TruffleContract(music);
+            // Connect provider to interact with contract
+            App.contracts.MusicContentManagement.setProvider(App.web3Provider);
+            console.log("MusicContentManagement contract initialized");
+            return App.render();
+          });
+        });
+      });
     });
   },
 
@@ -106,16 +130,14 @@ App = {
 
     // Load contract data
     App.contracts.Catalog.deployed().then(function (instance) {
-      console.log(("Contract deployed"));
+      console.log(("Contract deployed with address: "+App.contracts.Catalog.address));
       catalogInstance = instance;
-      return catalogInstance.linkedContents();
-    }).then(function (linkedContents) {
-      var contents = $("#contentList");
-      console.log(linkedContents);
-      var contentList = catalogInstance.GetContentList();
-      console.log(contentList);
-      for (let i = 0; i < linkedContents; i++){
-        var title = web3.toAscii(contentList[i]);
+      return catalogInstance.GetContentList();
+    }).then(function (contentList) {
+      console.log("Content list: "+contentList);
+      for (let i = 0; i < contentList.lenght; i++){
+        var title = web3.toUtf8(contentList[i]);
+        console.log("Content title: "+title);
         var contentTemplate = "<li class=\"list-group-item\">" + title + "</li>";
         contents.append(contentTemplate);
       }
@@ -141,7 +163,15 @@ App = {
     console.log("Title: "+title+"\nAuthor: "+author+"\nGenre: "+genre+"\nPrice: "+price);
     switch(genre){
       case "Book":
-        var pages = $("#pages").val();
+        var pages = parseInt($("#pages").val());
+        App.contracts.BookContentManagement.new(web3.fromUtf8(title), web3.fromUtf8(author), web3.fromUtf8(encoding), pages, App.contracts.Catalog.address, price, { from: App.account }
+      ).then(function () {
+          // Wait for contents to update
+          $("#content").hide();
+          $("#loader").show();
+        }).catch(function (err) {
+          console.error(err);
+        });
         break;
       case "Movie":
         var bitrate = $("#bitrate").val();
@@ -156,15 +186,6 @@ App = {
       default:
         console.log("Invalid choice!");
     }
-    App.contracts.Catalog.deployed().then(function (instance) {
-      return instance.LinkToTheCatalog(web3.fromAscii(title), price, { from: App.account });
-    }).then(function (result) {
-      // Wait for contents to update
-      $("#content").hide();
-      $("#loader").show();
-    }).catch(function (err) {
-      console.error(err);
-    });
   }
 
 };
