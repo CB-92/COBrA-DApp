@@ -116,6 +116,7 @@ App = {
     var catalogInstance;
     var loader = $("#loader");
     var content = $("#content");
+    var linkedContents = null;
 
     loader.show();
     content.hide();
@@ -132,14 +133,17 @@ App = {
     App.contracts.Catalog.deployed().then(function (instance) {
       console.log(("Contract deployed with address: "+App.contracts.Catalog.address));
       catalogInstance = instance;
+      return catalogInstance.linkedContents();
+    }).then(function (lc) {
+      linkedContents = lc;
       return catalogInstance.GetContentList();
     }).then(function (contentList) {
-      console.log("Content list: "+contentList);
-      for (let i = 0; i < contentList.lenght; i++){
+      console.log("Content list lenght: "+linkedContents);
+      for (let i = 0; i < linkedContents; i++){
         var title = web3.toUtf8(contentList[i]);
         console.log("Content title: "+title);
         var contentTemplate = "<li class=\"list-group-item\">" + title + "</li>";
-        contents.append(contentTemplate);
+        content.append(contentTemplate);
       }
       loader.hide();
       App.customizeModal("");
@@ -174,14 +178,30 @@ App = {
         });
         break;
       case "Movie":
-        var bitrate = $("#bitrate").val();
-        var duration = $("#duration").val();
-        var width = $("#width").val();
-        var height = $("#height").val();
+        var bitrate = parseInt($("#bitrate").val());
+        var duration = parseInt($("#duration").val());
+        var width = parseInt($("#width").val());
+        var height = parseInt($("#height").val());
+        App.contracts.BookContentManagement.new(web3.fromUtf8(title), web3.fromUtf8(author), web3.fromUtf8(encoding), bitrate, duration, width, height, App.contracts.Catalog.address, price, { from: App.account }
+        ).then(function () {
+          // Wait for contents to update
+          $("#content").hide();
+          $("#loader").show();
+        }).catch(function (err) {
+          console.error(err);
+        });
         break;
       case "Music":
-        var bitrate = $("#bitrate").val();
-        var duration = $("#duration").val();
+        var bitrate = parseInt($("#bitrate").val());
+        var duration = parseInt($("#duration").val());
+        App.contracts.BookContentManagement.new(web3.fromUtf8(title), web3.fromUtf8(author), web3.fromUtf8(encoding), bitrate, duration, App.contracts.Catalog.address, price, { from: App.account }
+        ).then(function () {
+          // Wait for contents to update
+          $("#content").hide();
+          $("#loader").show();
+        }).catch(function (err) {
+          console.error(err);
+        });
         break;
       default:
         console.log("Invalid choice!");

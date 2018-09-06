@@ -28,14 +28,15 @@ contract MovieContentManagement is BaseContentManagement{
     uint private height;
     
     constructor(bytes32 _title, bytes32 _author, bytes32 _encoding, uint _bitrate, uint _duration,
-    uint _resolution, address _catalogAddress, uint _price) public{
+    uint _width, uint _height, address _catalogAddress, uint _price) public{
         title = _title;
         author = _author;
         genre = "6d6f766965";
         content.push(_encoding);
         content.push(bytes32(_bitrate));
         content.push(bytes32(_duration));
-        content.push(bytes32(_resolution));
+        content.push(bytes32(_width));
+        content.push(bytes32(_height));
         catalogAddress = _catalogAddress;
         catalog = Catalog(catalogAddress);
         catalog.LinkToTheCatalog(title, _price);

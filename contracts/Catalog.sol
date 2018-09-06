@@ -157,7 +157,7 @@ contract Catalog {
         return (contentList, views);
     }
 
-    function GetContentList() external view ifNotEmpty returns (bytes32[]) {
+    function GetContentList() external view returns (bytes32[]) {
         return contentList;
     }
 
