@@ -68,9 +68,13 @@ App = {
         fromBlock: 0,
         toBlock: 'latest'
       }).watch(function (error, event) {
-        console.log("New content added to the catalog!", event)
-        // Reload when a new content is linked
-        App.render();
+        if(!error){
+          console.log("New content added to the catalog!", event)
+          // Reload when a new content is linked
+          App.render();
+        } else{
+          console.log(error);
+        }
       });
     });
   },
@@ -116,6 +120,7 @@ App = {
     var catalogInstance;
     var loader = $("#loader");
     var content = $("#content");
+    var tableBody = $("#tableBody");
     var linkedContents = null;
 
     loader.show();
@@ -142,8 +147,8 @@ App = {
       for (let i = 0; i < linkedContents; i++){
         var title = web3.toUtf8(contentList[i]);
         console.log("Content title: "+title);
-        var contentTemplate = "<li class=\"list-group-item\">" + title + "</li>";
-        content.append(contentTemplate);
+        var contentTemplate = "<tr><td>"+title+"</td><td>autore</td><td>genere</td><td>prezzo</td></tr >";
+        tableBody.append(contentTemplate);
       }
       loader.hide();
       App.customizeModal("");
@@ -182,7 +187,7 @@ App = {
         var duration = parseInt($("#duration").val());
         var width = parseInt($("#width").val());
         var height = parseInt($("#height").val());
-        App.contracts.BookContentManagement.new(web3.fromUtf8(title), web3.fromUtf8(author), web3.fromUtf8(encoding), bitrate, duration, width, height, App.contracts.Catalog.address, price, { from: App.account }
+        App.contracts.MovieContentManagement.new(web3.fromUtf8(title), web3.fromUtf8(author), web3.fromUtf8(encoding), bitrate, duration, width, height, App.contracts.Catalog.address, price, { from: App.account }
         ).then(function () {
           // Wait for contents to update
           $("#content").hide();
@@ -194,11 +199,12 @@ App = {
       case "Music":
         var bitrate = parseInt($("#bitrate").val());
         var duration = parseInt($("#duration").val());
-        App.contracts.BookContentManagement.new(web3.fromUtf8(title), web3.fromUtf8(author), web3.fromUtf8(encoding), bitrate, duration, App.contracts.Catalog.address, price, { from: App.account }
+        App.contracts.MusicContentManagement.new(web3.fromUtf8(title), web3.fromUtf8(author), web3.fromUtf8(encoding), bitrate, duration, App.contracts.Catalog.address, price, { from: App.account }
         ).then(function () {
           // Wait for contents to update
           $("#content").hide();
           $("#loader").show();
+          App.listenForEvents();
         }).catch(function (err) {
           console.error(err);
         });

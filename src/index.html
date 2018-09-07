@@ -57,8 +57,18 @@
     <div class="container">
           <div id="loader" class="loader"></div>
           <div id="content" style="display: none;">
-            <ul class="list-group list-group-flush" id="contentList">
-            </ul>
+            <table class="table">
+              <thead class="thead-dark">
+                <tr>
+                  <th>Title</th>
+                  <th>Author</th>
+                  <th>Genre</th>
+                  <th>Price</th>
+                </tr>
+              </thead>
+              <tbody id="tableBody">
+              </tbody>
+            </table>
             <button type="button" class="btn btn-primary btn-circle" data-toggle="modal" data-target="#addContentModal"><span class="fa fa-plus"></span>
             </button>
 
