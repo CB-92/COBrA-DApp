@@ -51,6 +51,9 @@ App = {
             // Connect provider to interact with contract
             App.contracts.MusicContentManagement.setProvider(App.web3Provider);
             console.log("MusicContentManagement contract initialized");
+
+            App.listenForEvents();
+
             return App.render();
           });
         });
@@ -121,6 +124,7 @@ App = {
     var loader = $("#loader");
     var content = $("#content");
     var tableBody = $("#tableBody");
+    var modal = $("#addContentModal");
     var linkedContents = null;
 
     loader.show();
@@ -152,6 +156,7 @@ App = {
       }
       loader.hide();
       App.customizeModal("");
+      modal.hide();
       content.show();
     }).catch(function (error) {
       console.warn(error);
@@ -169,12 +174,12 @@ App = {
     var genre = $("#genre option:selected").text();
     var encoding = $("#encoding").val();
     var price = parseInt($("#price").val());
-    console.log("Title: "+title+"\nAuthor: "+author+"\nGenre: "+genre+"\nPrice: "+price);
     switch(genre){
       case "Book":
         var pages = parseInt($("#pages").val());
         App.contracts.BookContentManagement.new(web3.fromUtf8(title), web3.fromUtf8(author), web3.fromUtf8(encoding), pages, App.contracts.Catalog.address, price, { from: App.account }
-      ).then(function () {
+      ).then(function (result) {
+          console.log(result);
           // Wait for contents to update
           $("#content").hide();
           $("#loader").show();
@@ -204,7 +209,6 @@ App = {
           // Wait for contents to update
           $("#content").hide();
           $("#loader").show();
-          App.listenForEvents();
         }).catch(function (err) {
           console.error(err);
         });
