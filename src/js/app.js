@@ -140,23 +140,23 @@ App = {
 
     // Load contract data
     App.contracts.Catalog.deployed().then(function (instance) {
-      console.log(("Contract deployed with address: "+App.contracts.Catalog.address));
       catalogInstance = instance;
       return catalogInstance.linkedContents();
     }).then(function (lc) {
       linkedContents = lc;
       return catalogInstance.GetContentList();
     }).then(function (contentList) {
-      console.log("Content list lenght: "+linkedContents);
+      tableBody.empty();
       for (let i = 0; i < linkedContents; i++){
         var title = web3.toUtf8(contentList[i]);
-        console.log("Content title: "+title);
         var contentTemplate = "<tr><td>"+title+"</td><td>autore</td><td>genere</td><td>prezzo</td></tr >";
         tableBody.append(contentTemplate);
       }
       loader.hide();
       App.customizeModal("");
-      modal.hide();
+      modal.modal('hide');
+      $(document.body).removeClass('modal-open');
+      $('.modal-backdrop').remove();
       content.show();
     }).catch(function (error) {
       console.warn(error);
