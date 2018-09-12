@@ -4,8 +4,7 @@ import "./BaseContentManagement.sol";
 contract Catalog {
     address public creator;
     uint premiumTime;
-    uint premiumPrice;
-    uint public linkedContents;
+    uint public premiumPrice;
     bytes32[] contentList;
     uint public paymentDelay;
     uint allTheViews;
@@ -29,7 +28,7 @@ contract Catalog {
         premiumPrice = 500;
         paymentDelay = 5;
         allTheViews = 0;
-        linkedContents = 0;
+        contentList = new bytes32[](0);
     }
 
     /* events */
@@ -136,6 +135,10 @@ contract Catalog {
         return address(this);
     }
 
+    function NumberOfLinkedContents() external view returns(uint){
+        return uint(contentList.length);
+    }
+
     function LinkToTheCatalog(bytes32 _title, uint _requestedPrice) external {
         contentList.push(_title);
         addedContents[_title].authorAddress = msg.sender;
@@ -145,7 +148,6 @@ contract Catalog {
         addedContents[_title].isLinked = true;
         addedContents[_title].averageRating = 0;
         addedContents[_title].requestedPrice = _requestedPrice;
-        linkedContents++;
         emit NewLinkedContent(_title);
     }
 

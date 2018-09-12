@@ -123,7 +123,7 @@ App = {
     var catalogInstance;
     var loader = $("#loader");
     var content = $("#content");
-    var tableBody = $("#tableBody");
+    var contents = $("#contents");
     var modal = $("#addContentModal");
     var linkedContents = null;
 
@@ -141,22 +141,31 @@ App = {
     // Load contract data
     App.contracts.Catalog.deployed().then(function (instance) {
       catalogInstance = instance;
-      return catalogInstance.linkedContents();
+      return catalogInstance.NumberOfLinkedContents()
     }).then(function (lc) {
       linkedContents = lc;
-      return catalogInstance.GetContentList();
-    }).then(function (contentList) {
-      tableBody.empty();
-      for (let i = 0; i < linkedContents; i++){
-        var title = web3.toUtf8(contentList[i]);
-        var contentTemplate = "<tr><td>"+title+"</td><td>autore</td><td>genere</td><td>prezzo</td></tr >";
-        tableBody.append(contentTemplate);
+      if(lc>0) return catalogInstance.GetStatistics();
+      else return false;
+    }).then(function (result) {
+      console.log("Number of linked contents: " + linkedContents);
+      contents.empty();
+      if(linkedContents>0){
+        var contentList = result[0];
+        var views = result[1];
+        for (let i = 0; i < linkedContents; i++) {
+          var title = web3.toUtf8(contentList[i]);
+          var contentViews = views[i];
+          var contentTemplate = "<li class=\"list-group-item d-flex justify-content-between align-items-center\">"
+            + title
+            + "<span class=\"badge badge-primary badge-pill fa fa-eye\">\t" + contentViews + "</span></li>";
+          contents.append(contentTemplate);
+        }
       }
-      loader.hide();
       App.customizeModal("");
       modal.modal('hide');
       $(document.body).removeClass('modal-open');
       $('.modal-backdrop').remove();
+      loader.hide();
       content.show();
     }).catch(function (error) {
       console.warn(error);
@@ -166,6 +175,23 @@ App = {
   selectedGenre: function () {
     var genre = $("#genre option:selected").text();
     App.customizeModal(genre);
+  },
+
+  buyPremium: function () {
+
+    App.contracts.Catalog.deployed().then(async (instance) => {
+      const premiumCost = await instance.premiumPrice();
+      
+      alert("REMINDER: You are buying a premium subscription at the cost of " +
+        web3.fromWei(premiumCost, "ether") + " ether. Confirm or reject the transation on metamask.");
+
+      transaction = await instance.BuyPremium({ from: App.account, value: premiumCost });
+    }).then(function (params) {
+      console.log("Premium account bought!");
+      $("#premiumButton").hide();       
+    }).catch(function (error) {
+      console.log(error);
+    });
   },
 
   addContent: function () {
