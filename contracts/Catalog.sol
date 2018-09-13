@@ -37,8 +37,13 @@ contract Catalog {
     event PaymentAvailable(bytes32 _content);
     event ClosedCatalog();
 
+    struct PremiumInfo{
+        bool isPremium;
+        uint blockNum;
+    }
+
     /* user address => block number of premium subscription*/
-    mapping (address => uint) premiumUsers;
+    mapping (address => PremiumInfo) premiumUsers;
 
     /*
     Content feedback includes 3 categories: appreciation of the content, content quality and price fairnes.
@@ -63,7 +68,8 @@ contract Catalog {
     /* modifier to restrict a functionality only to Premium users */
     modifier restrictToPremium{
         require(
-            premiumUsers[msg.sender] + premiumTime > block.number,
+            premiumUsers[msg.sender].isPremium &&
+            (premiumUsers[msg.sender].blockNum + premiumTime) > block.number,
             "Access restricted to Premium accounts!"
         );
         _;
@@ -335,9 +341,9 @@ contract Catalog {
     }
 
     function IsPremium(address _user) external view returns (bool){
-        if(premiumUsers[_user] + premiumTime > block.number)
-            return true;
-        else return false;
+        if(premiumUsers[_user].blockNum + premiumTime <= block.number)
+            premiumUsers[_user].isPremium = false;
+        return premiumUsers[_user].isPremium;
     }
 
     function GetContent(bytes32 _content) external payable costs(addedContents[_content].requestedPrice)
@@ -361,11 +367,13 @@ contract Catalog {
     }
 
     function GiftPremium(address _user) external payable costs(premiumPrice) {
-        premiumUsers[_user] = block.number;
+        premiumUsers[_user].isPremium = true;
+        premiumUsers[_user].blockNum = block.number;
     }
 
     function BuyPremium() external payable costs(premiumPrice){
-        premiumUsers[msg.sender] = block.number;
+        premiumUsers[msg.sender].isPremium = true;
+        premiumUsers[msg.sender].blockNum = block.number;
     }
 
     /* Add views to a content and emit an event if it reaches the views for a payment */

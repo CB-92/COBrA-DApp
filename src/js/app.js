@@ -141,7 +141,14 @@ App = {
     // Load contract data
     App.contracts.Catalog.deployed().then(function (instance) {
       catalogInstance = instance;
-      return catalogInstance.NumberOfLinkedContents()
+      return catalogInstance.IsPremium(App.account)
+    }).then(function (result) {
+      if(result){
+        $("#premiumButton").hide();
+      } else {
+        $("#premiumButton").show();
+      }
+      return catalogInstance.NumberOfLinkedContents()    
     }).then(function (lc) {
       linkedContents = lc;
       if(lc>0) return catalogInstance.GetStatistics();
