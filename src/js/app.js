@@ -2,6 +2,8 @@ App = {
   web3Provider: null,
   contracts: {},
   catalogAddress: null,
+  premiumUsers: [],
+  temp : null,
 
   init: function() {
     return App.initWeb3();
@@ -141,14 +143,18 @@ App = {
     // Load contract data
     App.contracts.Catalog.deployed().then(function (instance) {
       catalogInstance = instance;
-      return catalogInstance.IsPremium(App.account)
+      var user = App.account;
+      console.log("User: "+user);
+      return catalogInstance.IsPremium(user);
     }).then(function (result) {
+      console.log(App.account + " is premium user? "+ result);
+      
       if(result){
         $("#premiumButton").hide();
       } else {
         $("#premiumButton").show();
       }
-      return catalogInstance.NumberOfLinkedContents()    
+      return catalogInstance.NumberOfLinkedContents();    
     }).then(function (lc) {
       linkedContents = lc;
       if(lc>0) return catalogInstance.GetStatistics();
@@ -163,8 +169,9 @@ App = {
           var title = web3.toUtf8(contentList[i]);
           var contentViews = views[i];
           var contentTemplate = "<li class=\"list-group-item d-flex justify-content-between align-items-center\">"
-            + title
-            + "<span class=\"badge badge-primary badge-pill fa fa-eye\">\t" + contentViews + "</span></li>";
+            + title + "<div class = \"ml-auto\"><a href =\"#\" onclick=\"App.buyContent('"+title+"'); return false;\"><span class=\"fa fa-shopping-cart list-icon\"></span></a>"
+            + "<a href=\"#\"><span class=\"fa fa-gift list-icon\"></span></a>"
+            + "<a href=\"#\"><span class=\"fa fa-play list-icon\"></span></a>"+"<span class=\"badge badge-primary badge-pill fa fa-eye list-icon\">\t" + contentViews + "</span></div></li>";
           contents.append(contentTemplate);
         }
       }
@@ -193,9 +200,28 @@ App = {
         web3.fromWei(premiumCost, "ether") + " ether. Confirm or reject the transation on metamask.");
 
       transaction = await instance.BuyPremium({ from: App.account, value: premiumCost });
-    }).then(function (params) {
+    }).then(function () {
       console.log("Premium account bought!");
+      premiumUsers.push(App.account);
       $("#premiumButton").hide();       
+    }).catch(function (error) {
+      console.log(error);
+    });
+  },
+
+  buyContent: function(title) {
+    App.contracts.Catalog.deployed().then(async (instance) => {
+      const contentCost = await instance.getContentPrice(title);
+      console.log("Prezzo: "+contentCost);
+      
+
+      alert("REMINDER: You are buying "+title+" at the cost of " +
+        web3.fromWei(contentCost, "ether") + " ether. Confirm or reject the transation on metamask.");
+
+      transaction = await instance.GetContent(web3.fromUtf8(title), { from: App.account, value: contentCost });
+      console.log("Content bought!");
+    }).then(function () {
+      //console.log("Content bought!");
     }).catch(function (error) {
       console.log(error);
     });
@@ -213,6 +239,9 @@ App = {
         App.contracts.BookContentManagement.new(web3.fromUtf8(title), web3.fromUtf8(author), web3.fromUtf8(encoding), pages, App.contracts.Catalog.address, price, { from: App.account }
       ).then(function (result) {
           console.log(result);
+          temp = App.contracts.BookContentManagement.address;
+          console.log(temp);
+          
           // Wait for contents to update
           $("#content").hide();
           $("#loader").show();

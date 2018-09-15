@@ -137,6 +137,10 @@ contract Catalog {
         _;
     }
 
+    function getContentPrice(bytes32 _title) external view ifLinkedContent(_title) returns(uint){
+        return addedContents[_title].requestedPrice;
+    }
+
     function getCatalogAddress() external view returns(address){
         return address(this);
     }
@@ -341,9 +345,10 @@ contract Catalog {
     }
 
     function IsPremium(address _user) external view returns (bool){
-        if(premiumUsers[_user].blockNum + premiumTime <= block.number)
-            premiumUsers[_user].isPremium = false;
-        return premiumUsers[_user].isPremium;
+        if(premiumUsers[_user].isPremium && 
+        (premiumUsers[_user].blockNum + premiumTime > block.number))
+        return true;
+        else return false;
     }
 
     function GetContent(bytes32 _content) external payable costs(addedContents[_content].requestedPrice)

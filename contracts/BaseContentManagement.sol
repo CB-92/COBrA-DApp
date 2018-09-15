@@ -9,6 +9,8 @@ contract BaseContentManagement {
     address internal catalogAddress;
     Catalog internal catalog;
 
+    event ConsumedContent(bytes32 _content, address _user);
+
     struct UserMetadata{
         bool allowed;
         bool consumed;
@@ -43,7 +45,7 @@ contract BaseContentManagement {
         if(catalog.IsPremium(msg.sender)==false){
             catalog.AddViews(title);
         }
-
+        emit ConsumedContent(title, msg.sender);
         return content;
     }
 
