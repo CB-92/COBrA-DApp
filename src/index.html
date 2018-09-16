@@ -167,7 +167,15 @@
             
                   <!-- Modal body -->
                   <div class="modal-body">
-                    
+                    <div class="custom-control custom-checkbox mb-3">
+                      <input type="checkbox" class="custom-control-input" id="giftPremium" name="giftPremium" onchange="App.giftPremiumChecked(this);">
+                      <label class="custom-control-label" for="giftPremium">It's a gift</label>
+                    </div>
+                    <p style="display: none;" id="premiumGiftPar">Insert below the address of the user you want to gift a Premium subscription!</p>
+                    <div style="display: none;" class="form-group" id="premiumGiftInput">
+                      <label for="user">User address:</label>
+                      <input type="text" class="form-control" id="address" placeholder="Enter recipient address" name="address">
+                    </div>
                   </div>
             
                   <!-- Modal footer -->

@@ -141,6 +141,10 @@ contract Catalog {
         return addedContents[_title].requestedPrice;
     }
 
+    function GetContentAddress(bytes32 _title) external view ifLinkedContent(_title) returns(address){
+        return address(addedContents[_title].authorAddress);
+    }
+
     function getCatalogAddress() external view returns(address){
         return address(this);
     }
