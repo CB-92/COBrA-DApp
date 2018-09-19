@@ -199,6 +199,25 @@ App = {
     App.customizeModal(genre);
   },
 
+  selectedFilter: function (id) {
+    var filter = $("#filter"+ id +" option:selected").text();
+
+    switch (filter) {
+      case "Author":        
+        $("#"+id+"byauthorinput").show();
+        $("#" + id + "bygenreinput").hide();
+        break;
+      case "Genre":
+        $("#" + id + "byauthorinput").hide();
+        $("#" + id + "bygenreinput").show();
+        break;
+      default:
+        $("#" + id + "byauthorinput").hide();
+        $("#" + id + "bygenreinput").hide();        
+        break;
+    }
+  },
+
   giftPremiumChecked: function (checkbox) {
     var p = $("#premiumGiftPar");
     var input = $("#premiumGiftInput");
@@ -288,6 +307,72 @@ App = {
       web3.fromWei(contentCost, "ether") + " ether. Confirm or reject the transation on metamask.");
       transaction = await instance.GiftContent(web3.fromUtf8(contentTitle), address, { from: App.account, value: contentCost });
       console.log("Content bought!");
+    }).catch(function (error) {
+      console.log(error);
+      alert("An error occured while processing the transaction!");
+    });
+  },
+
+  getLatest: function () {
+    var temp = null;
+    var result = null;
+    var filter = $("#filterlatest option:selected").text();
+    console.log(filter);
+    
+    App.contracts.Catalog.deployed().then(async (instance) =>{
+      switch (filter) {
+        case "Author":
+          temp = $("#latestbyauthorinput").val();
+          console.log(temp);
+          
+          result = await instance.GetLatestByAuthor(web3.toUtf8(temp), {from: App.account});
+          console.log(web3.fromUtf8(result));
+          
+          break;
+
+        case "Genre":
+          temp = $("#latestbygenreinput").val();
+          console.log(temp);
+
+          result = await instance.GetLatestByGenre(web3.toUtf8(temp), { from: App.account });
+          console.log(web3.fromUtf8(result));
+          break;
+        default:
+          break;
+      }
+    }).catch(function (error) {
+      console.log(error);
+      alert("An error occured while processing the transaction!");
+    });
+  },
+
+  getPopular: function () {
+    var temp = null;
+    var result = null;
+    var filter = $("#filterpopular option:selected").text();
+    console.log(filter);
+
+    App.contracts.Catalog.deployed().then(async (instance) => {
+      switch (filter) {
+        case "Author":
+          temp = $("#popularbyauthorinput").val();
+          console.log(temp);
+
+          result = await instance.GetLatestByAuthor(web3.toUtf8(temp), { from: App.account });
+          console.log(web3.fromUtf8(result));
+
+          break;
+
+        case "Genre":
+          temp = $("#popularbygenreinput").val();
+          console.log(temp);
+
+          result = await instance.GetLatestByGenre(web3.toUtf8(temp), { from: App.account });
+          console.log(web3.fromUtf8(result));
+          break;
+        default:
+          break;
+      }
     }).catch(function (error) {
       console.log(error);
       alert("An error occured while processing the transaction!");
