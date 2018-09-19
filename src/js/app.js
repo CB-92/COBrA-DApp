@@ -3,6 +3,7 @@ App = {
   contracts: {},
   catalogAddress: null,
   premiumGift: false,
+  contentTitle: null,
 
   init: function() {
     return App.initWeb3();
@@ -84,6 +85,13 @@ App = {
     });
   },
 
+  openContentModal: function (t) {
+    contentTitle = t;
+    $("#giftContentModal").modal('show');
+    $(document.body).addClass('modal-open');
+    $('.modal-backdrop').add();
+  },
+
   customizeModal: function(genre) {
     var pages = $("#p");
     var bitrate = $("#b");
@@ -150,9 +158,9 @@ App = {
       console.log(App.account + " is premium user? "+ result);
       
       if(result){
-        $("#premiumButton").hide();
+        $("#premiumLabel").show();
       } else {
-        $("#premiumButton").show();
+        $("#premiumLabel").hide();
       }
       return catalogInstance.NumberOfLinkedContents();    
     }).then(function (lc) {
@@ -170,7 +178,7 @@ App = {
           var contentViews = views[i];
           var contentTemplate = "<li class=\"list-group-item d-flex justify-content-between align-items-center\">"
             + title + "<div class = \"ml-auto\"><a href =\"#\" onclick=\"App.buyContent('"+title+"'); return false;\"><span class=\"fa fa-shopping-cart list-icon\"></span></a>"
-            + "<a href=\"#\"><span class=\"fa fa-gift list-icon\"></span></a>"
+            + "<a href=\"#\"><span class=\"fa fa-gift list-icon\" onclick=\"App.openContentModal('"+title+"');return false;\"  ></span></a>"
             + "<a href=\"#\"><span class=\"fa fa-play list-icon\" onclick=\"App.consumeContent('" + title +"'); return false;\"></span></a>"+"<span class=\"badge badge-primary badge-pill fa fa-eye list-icon\">\t" + contentViews + "</span></div></li>";
           contents.append(contentTemplate);
         }
@@ -209,14 +217,17 @@ App = {
     console.log("Checkbox value: "+premiumGift);
     
     var address = $("#address").val();
-    console.log("Address: "+address);
-    
-    var isAddress = web3.isAddress(address);
-    console.log("Is address? "+isAddress);
     
     App.contracts.Catalog.deployed().then(async (instance) => {
       const premiumCost = await instance.premiumPrice();
       if (premiumGift) {
+        if(!web3.isAddress(address)){
+          alert("Wrong address format!");
+          $("#premiumGiftPar").hide();
+          $("#premiumGiftInput").hide();
+          App.render();
+          return;
+        }
         alert("REMINDER: You are buying a premium subscription for "+address+" at the cost of " +
           web3.fromWei(premiumCost, "ether") + " ether. Confirm or reject the transation on metamask.");
 
@@ -228,7 +239,6 @@ App = {
         transaction = await instance.BuyPremium({ from: App.account, value: premiumCost });
       }
     }).then(function () {
-      console.log("Premium account bought!");
       $("#premiumGiftPar").hide();
       $("#premiumGiftInput").hide();
       //$("#premiumButton").hide();       
@@ -262,6 +272,21 @@ App = {
 
         transaction = await instance.GetContent(web3.fromUtf8(title), { from: App.account, value: contentCost });
       }
+      console.log("Content bought!");
+    }).catch(function (error) {
+      console.log(error);
+      alert("An error occured while processing the transaction!");
+    });
+  },
+
+  giftContent: function () {
+    var address = $("#giftAddress").val();
+    App.contracts.Catalog.deployed().then(async (instance) => {
+      const contentCost = await instance.getContentPrice(contentTitle);
+      console.log("Prezzo: " + contentCost);
+      alert("REMINDER: You are buying " + contentTitle + " for "+address+" at the cost of " +
+      web3.fromWei(contentCost, "ether") + " ether. Confirm or reject the transation on metamask.");
+      transaction = await instance.GiftContent(web3.fromUtf8(contentTitle), address, { from: App.account, value: contentCost });
       console.log("Content bought!");
     }).catch(function (error) {
       console.log(error);
