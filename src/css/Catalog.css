@@ -46,6 +46,10 @@
   margin: auto;
 }
 
+.my-list{
+  padding-top: 7%;
+}
+
 #labelDiv {
   padding-right: 20px;
   margin: auto;

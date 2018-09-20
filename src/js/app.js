@@ -316,6 +316,8 @@ App = {
   getLatest: function () {
     var temp = null;
     var result = null;
+    var list = $("#latestContentsList");
+    list.empty();
     var filter = $("#filterlatest option:selected").text();
     console.log(filter);
     
@@ -324,9 +326,11 @@ App = {
         case "Author":
           temp = $("#latestbyauthorinput").val();
           console.log(temp);
+          console.log(web3.fromUtf8(temp));
           
-          result = await instance.GetLatestByAuthor(web3.toUtf8(temp), {from: App.account});
-          console.log(web3.fromUtf8(result));
+          var r = await instance.GetLatestByAuthor(web3.fromUtf8(temp), {from: App.account});
+          result = web3.toUtf8(r);
+          console.log(result);
           
           break;
 
@@ -335,22 +339,25 @@ App = {
           console.log(temp);
           switch (temp) {
             case "Book":
-              result = await instance.GetLatestByGenre("626f6f6b", { from: App.account });
+              var r = await instance.GetLatestByGenre("626f6f6b", { from: App.account });
+              result = web3.toUtf8(r);
               console.log(result);
               
               break;
             case "Movie":
-              result = await instance.GetLatestByGenre("6d6f766965", { from: App.account });
+              var r = await instance.GetLatestByGenre("6d6f766965", { from: App.account });
+              result = web3.toUtf8(r);
               console.log(result);
 
               break;
             case "Music":
-              result = await instance.GetLatestByGenre("736f6e67", { from: App.account });
+              var r = await instance.GetLatestByGenre("736f6e67", { from: App.account });
+              result = web3.toUtf8(r);
               console.log(result);
 
               break;
             default:
-              alert("You hav to choose a genre!");
+              alert("You have to choose a genre!");
               break;
           }
     
@@ -358,6 +365,11 @@ App = {
         default:
           break;
       }
+      var contentTemplate = "<li class=\"list-group-item d-flex justify-content-between align-items-center\">"
+            + result + "<div class = \"ml-auto\"><a href =\"#\" onclick=\"App.buyContent('" + result + "'); return false;\"><span class=\"fa fa-shopping-cart list-icon\"></span></a>"
+            + "<a href=\"#\"><span class=\"fa fa-gift list-icon\" onclick=\"App.openContentModal('" + result + "');return false;\"  ></span></a>"
+            + "<a href=\"#\"><span class=\"fa fa-play list-icon\" onclick=\"App.consumeContent('" + result + "'); return false;\"></span></a></div></li>";
+      list.append(contentTemplate);
     }).catch(function (error) {
       console.log(error);
       alert("An error occured while processing the transaction!");
@@ -387,17 +399,17 @@ App = {
           switch (temp) {
             case "Book":
               result = await instance.GetMostPopularByGenre("626f6f6b", { from: App.account });
-              console.log(web3.utils.toUtf8(result));
+              console.log(web3.toUtf8(""+result));
 
               break;
             case "Movie":
               result = await instance.GetMostPopularByGenre("6d6f766965", { from: App.account });
-              console.log(web3.toUtf8(result));
+              console.log(web3.toUtf8(""+result));
 
               break;
             case "Music":
               result = await instance.GetMostPopularByGenre("736f6e67", { from: App.account });
-              console.log(web3.toUtf8(result));
+              console.log(web3.toUtf8(""+result));
 
               break;
             default:

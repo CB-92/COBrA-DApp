@@ -1,4 +1,6 @@
 {
+  "open": "local",
+  "browser": "google-chrome-stable",
   "server": {
     "baseDir": ["./src", "./build/contracts"]
   }
