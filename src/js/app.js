@@ -331,11 +331,29 @@ App = {
           break;
 
         case "Genre":
-          temp = $("#latestbygenreinput").val();
+          temp = $("#latestbygenreinput option:selected").text();
           console.log(temp);
+          switch (temp) {
+            case "Book":
+              result = await instance.GetLatestByGenre("626f6f6b", { from: App.account });
+              console.log(result);
+              
+              break;
+            case "Movie":
+              result = await instance.GetLatestByGenre("6d6f766965", { from: App.account });
+              console.log(result);
 
-          result = await instance.GetLatestByGenre(web3.toUtf8(temp), { from: App.account });
-          console.log(web3.fromUtf8(result));
+              break;
+            case "Music":
+              result = await instance.GetLatestByGenre("736f6e67", { from: App.account });
+              console.log(result);
+
+              break;
+            default:
+              alert("You hav to choose a genre!");
+              break;
+          }
+    
           break;
         default:
           break;
@@ -364,11 +382,29 @@ App = {
           break;
 
         case "Genre":
-          temp = $("#popularbygenreinput").val();
+          temp = $("#popularbygenreinput option:selected").text();
           console.log(temp);
+          switch (temp) {
+            case "Book":
+              result = await instance.GetMostPopularByGenre("626f6f6b", { from: App.account });
+              console.log(web3.utils.toUtf8(result));
 
-          result = await instance.GetLatestByGenre(web3.toUtf8(temp), { from: App.account });
-          console.log(web3.fromUtf8(result));
+              break;
+            case "Movie":
+              result = await instance.GetMostPopularByGenre("6d6f766965", { from: App.account });
+              console.log(web3.toUtf8(result));
+
+              break;
+            case "Music":
+              result = await instance.GetMostPopularByGenre("736f6e67", { from: App.account });
+              console.log(web3.toUtf8(result));
+
+              break;
+            default:
+              alert("You have to choose a genre!");
+              break;
+          }
+          
           break;
         default:
           break;
