@@ -32,32 +32,37 @@ App = {
       // Connect provider to interact with contract
       App.contracts.Catalog.setProvider(App.web3Provider);
       console.log("Catalog contract initialized");
-      $.getJSON("BookContentManagement.json", function (book) {
-        console.log("Book json loaded");
-        // Instantiate a new truffle contract from the artifact
-        App.contracts.BookContentManagement = TruffleContract(book);
-        // Connect provider to interact with contract
-        App.contracts.BookContentManagement.setProvider(App.web3Provider);
-        console.log("BookContentManagement contract initialized");
-        $.getJSON("MovieContentManagement.json", function (movie) {
-          console.log("Movie json loaded");
+      $.getJSON("BaseContentManagement.json", function (base) {
+        App.contracts.BaseManager = TruffleContract(base);
+        App.contracts.BaseManager.setProvider(App.web3Provider);
+        console.log("Base Content manager loaded");
+        $.getJSON("BookContentManagement.json", function (book) {
+          console.log("Book json loaded");
           // Instantiate a new truffle contract from the artifact
-          App.contracts.MovieContentManagement = TruffleContract(movie);
+          App.contracts.BookContentManagement = TruffleContract(book);
           // Connect provider to interact with contract
-          App.contracts.MovieContentManagement.setProvider(App.web3Provider);
-          console.log("MovieContentManagement contract initialized");
-          $.getJSON("MusicContentManagement.json", function (music) {
-            console.log("Music json loaded");
+          App.contracts.BookContentManagement.setProvider(App.web3Provider);
+          console.log("BookContentManagement contract initialized");
+          $.getJSON("MovieContentManagement.json", function (movie) {
+            console.log("Movie json loaded");
             // Instantiate a new truffle contract from the artifact
-            App.contracts.MusicContentManagement = TruffleContract(music);
+            App.contracts.MovieContentManagement = TruffleContract(movie);
             // Connect provider to interact with contract
-            App.contracts.MusicContentManagement.setProvider(App.web3Provider);
-            console.log("MusicContentManagement contract initialized");
+            App.contracts.MovieContentManagement.setProvider(App.web3Provider);
+            console.log("MovieContentManagement contract initialized");
+            $.getJSON("MusicContentManagement.json", function (music) {
+              console.log("Music json loaded");
+              // Instantiate a new truffle contract from the artifact
+              App.contracts.MusicContentManagement = TruffleContract(music);
+              // Connect provider to interact with contract
+              App.contracts.MusicContentManagement.setProvider(App.web3Provider);
+              console.log("MusicContentManagement contract initialized");
 
-            premiumGift = false;
-            App.listenForEvents();
+              premiumGift = false;
+              App.listenForEvents();
 
-            return App.render();
+              return App.render();
+            });
           });
         });
       });
@@ -66,21 +71,9 @@ App = {
 
   // Listen for events emitted from the contract
   listenForEvents: function () {
-    App.contracts.Catalog.deployed().then(function (instance) {
-      // Restart Chrome if you are unable to receive this event
-      // This is a known issue with Metamask
-      // https://github.com/MetaMask/metamask-extension/issues/2393
-      instance.NewLinkedContent({}, {
-        fromBlock: 0,
-        toBlock: 'latest'
-      }).watch(function (error, event) {
-        if(!error){
-          console.log("New content added to the catalog!", event)
-          // Reload when a new content is linked
-          App.render();
-        } else{
-          console.log(error);
-        }
+    App.contracts.Catalog.deployed().then(async(instance) =>{
+      web3.eth.getBlockNumber(function (error, block) {
+        // TODO: Event listeners
       });
     });
   },
@@ -259,8 +252,7 @@ App = {
       }
     }).then(function () {
       $("#premiumGiftPar").hide();
-      $("#premiumGiftInput").hide();
-      //$("#premiumButton").hide();       
+      $("#premiumGiftInput").hide();     
     }).catch(function (error) {
       console.log(error);
     });
@@ -270,11 +262,21 @@ App = {
     App.contracts.Catalog.deployed().then(async (instance) => {
       const address = await instance.GetContentAddress(web3.fromUtf8(title));
       console.log("Content "+title+" has address "+address);
-      
-      //TODO chiamata a consumeContent del contenuto
+      const manager = await App.contracts.BaseManager.at(address);
+      var content = await manager.consumeContent({from: App.account});
+      console.log(title +" consumed by "+App.account);
+      App.openFeedbackModal(title);
+
     }).catch(function (error) {
       console.log(error);
     });
+  },
+
+  openFeedbackModal: function (t) {
+    contentTitle = t;
+    $(document.body).addClass('modal-open');
+    $('.modal-backdrop').add();
+    $("#feedbackModal").modal('show');
   },
 
   buyContent: function(title) {
@@ -366,9 +368,9 @@ App = {
           break;
       }
       var contentTemplate = "<li class=\"list-group-item d-flex justify-content-between align-items-center\">"
-            + result + "<div class = \"ml-auto\"><a href =\"#\" onclick=\"App.buyContent('" + result + "'); return false;\"><span class=\"fa fa-shopping-cart list-icon\"></span></a>"
-            + "<a href=\"#\"><span class=\"fa fa-gift list-icon\" onclick=\"App.openContentModal('" + result + "');return false;\"  ></span></a>"
-            + "<a href=\"#\"><span class=\"fa fa-play list-icon\" onclick=\"App.consumeContent('" + result + "'); return false;\"></span></a></div></li>";
+            + result + "<div class = \"ml-auto\"><a href =\"#\" onclick=\"App.buyContent(\"" + result + "\"); return false;\"><span class=\"fa fa-shopping-cart list-icon\"></span></a>"
+            + "<a href=\"#\"><span class=\"fa fa-gift list-icon\" onclick=\"App.openContentModal(\"" + result + "\");return false;\"></span></a>"
+            + "<a href=\"#\"><span class=\"fa fa-play list-icon\" onclick=\"App.consumeContent(\"" + result + "\"); return false;\"></span></a></div></li>";
       list.append(contentTemplate);
     }).catch(function (error) {
       console.log(error);
@@ -379,6 +381,8 @@ App = {
   getPopular: function () {
     var temp = null;
     var result = null;
+    var list = $("#mostPopularList");
+    list.empty();
     var filter = $("#filterpopular option:selected").text();
     console.log(filter);
 
@@ -421,6 +425,12 @@ App = {
         default:
           break;
       }
+      var r = web3.toUtf8(result);
+      var contentTemplate = "<li class=\"list-group-item d-flex justify-content-between align-items-center\">"
+        + r + "<div class = \"ml-auto\"><a href =\"#\" onclick=\"App.buyContent(\"" + r + "\"); return false;\"><span class=\"fa fa-shopping-cart list-icon\"></span></a>"
+        + "<a href=\"#\"><span class=\"fa fa-gift list-icon\" onclick=\"App.openContentModal(\"" + r + "\");return false;\"></span></a>"
+        + "<a href=\"#\"><span class=\"fa fa-play list-icon\" onclick=\"App.consumeContent(\"" + r + "\"); return false;\"></span></a></div></li>";
+      list.append(contentTemplate);
     }).catch(function (error) {
       console.log(error);
       alert("An error occured while processing the transaction!");
@@ -438,9 +448,7 @@ App = {
         var pages = parseInt($("#pages").val());
         App.contracts.BookContentManagement.new(web3.fromUtf8(title), web3.fromUtf8(author), web3.fromUtf8(encoding), pages, App.contracts.Catalog.address, price, { from: App.account }
       ).then(function () {
-          // Wait for contents to update
-          $("#content").hide();
-          $("#loader").show();
+          App.render();
         }).catch(function (err) {
           console.error(err);
         });
@@ -452,9 +460,7 @@ App = {
         var height = parseInt($("#height").val());
         App.contracts.MovieContentManagement.new(web3.fromUtf8(title), web3.fromUtf8(author), web3.fromUtf8(encoding), bitrate, duration, width, height, App.contracts.Catalog.address, price, { from: App.account }
         ).then(function () {
-          // Wait for contents to update
-          $("#content").hide();
-          $("#loader").show();
+          App.render();
         }).catch(function (err) {
           console.error(err);
         });
@@ -464,9 +470,7 @@ App = {
         var duration = parseInt($("#duration").val());
         App.contracts.MusicContentManagement.new(web3.fromUtf8(title), web3.fromUtf8(author), web3.fromUtf8(encoding), bitrate, duration, App.contracts.Catalog.address, price, { from: App.account }
         ).then(function () {
-          // Wait for contents to update
-          $("#content").hide();
-          $("#loader").show();
+          App.render();
         }).catch(function (err) {
           console.error(err);
         });
