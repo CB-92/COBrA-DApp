@@ -279,6 +279,23 @@ App = {
     $("#feedbackModal").modal('show');
   },
 
+  leaveFeedback: function () {
+    console.log("Feedback for content "+contentTitle);
+    var a = $('input[name=appreciation]:checked', '#appreciationForm').val();
+    console.log("Appreciation of the content: "+a);
+    var q = $('input[name=quality]:checked', '#qualityForm').val();
+    console.log("Content quality: "+q);
+    var p = $('input[name=price]:checked', '#priceForm').val();
+    console.log("Price fairness: "+p);
+    App.contracts.Catalog.deployed().then(async (instance) => {
+      await instance.LeaveFeedback(web3.fromUtf8(contentTitle), p, a, q, {from: App.account});
+      App.render();
+    }).catch(function (error) {
+      console.log(error);
+      alert("An error occured while processing the transaction!");
+    });
+  },
+
   buyContent: function(title) {
     App.contracts.Catalog.deployed().then(async (instance) => {
       const isPremium = await instance.IsPremium(App.account);
