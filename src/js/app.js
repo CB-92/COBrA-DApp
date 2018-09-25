@@ -385,9 +385,9 @@ App = {
           break;
       }
       var contentTemplate = "<li class=\"list-group-item d-flex justify-content-between align-items-center\">"
-            + result + "<div class = \"ml-auto\"><a href =\"#\" onclick=\"App.buyContent(\"" + result + "\"); return false;\"><span class=\"fa fa-shopping-cart list-icon\"></span></a>"
-            + "<a href=\"#\"><span class=\"fa fa-gift list-icon\" onclick=\"App.openContentModal(\"" + result + "\");return false;\"></span></a>"
-            + "<a href=\"#\"><span class=\"fa fa-play list-icon\" onclick=\"App.consumeContent(\"" + result + "\"); return false;\"></span></a></div></li>";
+            + result + "<div class = \"ml-auto\"><a href =\"#\" onclick=\"App.buyContent('" + result + "'); return false;\"><span class=\"fa fa-shopping-cart list-icon\"></span></a>"
+            + "<a href=\"#\"><span class=\"fa fa-gift list-icon\" onclick=\"App.openContentModal('" + result + "');return false;\"></span></a>"
+            + "<a href=\"#\"><span class=\"fa fa-play list-icon\" onclick=\"App.consumeContent('" + result + "'); return false;\"></span></a></div></li>";
       list.append(contentTemplate);
     }).catch(function (error) {
       console.log(error);
@@ -444,14 +444,164 @@ App = {
       }
       var r = web3.toUtf8(result);
       var contentTemplate = "<li class=\"list-group-item d-flex justify-content-between align-items-center\">"
-        + r + "<div class = \"ml-auto\"><a href =\"#\" onclick=\"App.buyContent(\"" + r + "\"); return false;\"><span class=\"fa fa-shopping-cart list-icon\"></span></a>"
-        + "<a href=\"#\"><span class=\"fa fa-gift list-icon\" onclick=\"App.openContentModal(\"" + r + "\");return false;\"></span></a>"
-        + "<a href=\"#\"><span class=\"fa fa-play list-icon\" onclick=\"App.consumeContent(\"" + r + "\"); return false;\"></span></a></div></li>";
+        + r + "<div class = \"ml-auto\"><a href =\"#\" onclick=\"App.buyContent('" + r + "'); return false;\"><span class=\"fa fa-shopping-cart list-icon\"></span></a>"
+        + "<a href=\"#\"><span class=\"fa fa-gift list-icon\" onclick=\"App.openContentModal('" + r + "');return false;\"></span></a>"
+        + "<a href=\"#\"><span class=\"fa fa-play list-icon\" onclick=\"App.consumeContent('" + r + "'); return false;\"></span></a></div></li>";
       list.append(contentTemplate);
     }).catch(function (error) {
       console.log(error);
       alert("An error occured while processing the transaction!");
     });
+  },
+
+  getMostRated: function () {
+    var temp = null;
+    var result = null;
+    var list = $("#ratedContentList");
+    list.empty();
+    var filter = $("#filterrated option:selected").text();
+    var category = $("#category option:selected").val();
+    console.log("Category: "+category+ " by "+ filter);
+
+    App.contracts.Catalog.deployed().then(async (instance) => {
+      switch (category) {
+        case "none":
+        if (filter == "Genre") {
+          temp = $("#ratedbygenreinput option:selected").text();
+          switch (temp) {
+            case "Book":
+              result = await instance.GetMostRatedByGenre("626f6f6b", { from: App.account });
+              console.log(web3.toUtf8("" + result));
+
+              break;
+            case "Movie":
+              result = await instance.GetMostRatedByGenre("6d6f766965", { from: App.account });
+              console.log(web3.toUtf8("" + result));
+
+              break;
+            case "Music":
+              result = await instance.GetMostRatedByGenre("736f6e67", { from: App.account });
+              console.log(web3.toUtf8("" + result));
+
+              break;
+            default:
+              alert("You have to choose a genre!");
+              break;
+          }
+        } else  if(filter == "Author"){
+          temp = $("#ratedbyauthorinput").val();
+          result = await instance.GetMostRatedByAuthor(web3.toUtf8(temp), {from: App.account});
+        } else{
+          result = await instance.GetMostRated({ from: App.account });
+        }
+        break;
+        
+        case "appreciation":
+        if (filter == "Genre") {
+          temp = $("#ratedbygenreinput option:selected").text();
+          switch (temp) {
+            case "Book":
+              result = await instance.GetMostRatedByGenre("626f6f6b", 0, { from: App.account });
+              console.log(web3.toUtf8("" + result));
+
+              break;
+            case "Movie":
+              result = await instance.GetMostRatedByGenre("6d6f766965", 0, { from: App.account });
+              console.log(web3.toUtf8("" + result));
+
+              break;
+            case "Music":
+              result = await instance.GetMostRatedByGenre("736f6e67", 0, { from: App.account });
+              console.log(web3.toUtf8("" + result));
+
+              break;
+            default:
+              alert("You have to choose a genre!");
+              break;
+          }
+        } else if (filter == "Author") {
+          temp = $("#ratedbyauthorinput").val();
+          result = await instance.GetMostRatedByAuthor(web3.toUtf8(temp), 0, { from: App.account });
+        } else {
+          result = await instance.GetMostRated(0, { from: App.account });
+        }
+        break;
+      
+      case "quality":
+        if (filter == "Genre") {
+          temp = $("#ratedbygenreinput option:selected").text();
+          switch (temp) {
+            case "Book":
+              result = await instance.GetMostRatedByGenre("626f6f6b", 1, { from: App.account });
+              console.log(web3.toUtf8("" + result));
+
+              break;
+            case "Movie":
+              result = await instance.GetMostRatedByGenre("6d6f766965", 1, { from: App.account });
+              console.log(web3.toUtf8("" + result));
+
+              break;
+            case "Music":
+              result = await instance.GetMostRatedByGenre("736f6e67", 1, { from: App.account });
+              console.log(web3.toUtf8("" + result));
+
+              break;
+            default:
+              alert("You have to choose a genre!");
+              break;
+          }
+        } else if (filter == "Author") {
+          temp = $("#ratedbyauthorinput").val();
+          result = await instance.GetMostRatedByAuthor(web3.toUtf8(temp), 1, { from: App.account });
+        } else {
+          result = await instance.GetMostRated(1, { from: App.account });
+        }
+        break;
+
+      case "price":
+        if (filter == "Genre") {
+          temp = $("#ratedbygenreinput option:selected").text();
+          switch (temp) {
+            case "Book":
+              result = await instance.GetMostRatedByGenre("626f6f6b", 2, { from: App.account });
+              console.log(web3.toUtf8("" + result));
+
+              break;
+            case "Movie":
+              result = await instance.GetMostRatedByGenre("6d6f766965", 2, { from: App.account });
+              console.log(web3.toUtf8("" + result));
+
+              break;
+            case "Music":
+              result = await instance.GetMostRatedByGenre("736f6e67", 2, { from: App.account });
+              console.log(web3.toUtf8("" + result));
+
+              break;
+            default:
+              alert("You have to choose a genre!");
+              break;
+          }
+        } else if (filter == "Author") {
+          temp = $("#ratedbyauthorinput").val();
+          result = await instance.GetMostRatedByAuthor(web3.toUtf8(temp), 2, { from: App.account });
+        } else {
+          result = await instance.GetMostRated(2, { from: App.account });
+        }
+        break;
+    
+      default:
+        break;
+    }
+      var r = web3.toUtf8(result);
+      var contentTemplate = "<li class=\"list-group-item d-flex justify-content-between align-items-center\">"
+        + r + "<div class = \"ml-auto\"><a href =\"#\" onclick=\"App.buyContent('" + r + "'); return false;\"><span class=\"fa fa-shopping-cart list-icon\"></span></a>"
+        + "<a href=\"#\"><span class=\"fa fa-gift list-icon\" onclick=\"App.openContentModal('" + r + "');return false;\"></span></a>"
+        + "<a href=\"#\"><span class=\"fa fa-play list-icon\" onclick=\"App.consumeContent('" + r + "'); return false;\"></span></a></div></li>";
+      list.append(contentTemplate);
+    }).catch(function (error) {
+      console.log(error);
+      alert("An error occured while processing the transaction!");
+    })
   },
 
   addContent: function () {

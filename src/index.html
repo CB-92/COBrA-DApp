@@ -109,7 +109,35 @@
           </div>
           <div id="rated" class="container tab-pane fade"><br>
             <h3>Most rated contents</h3>
-            <p>Sed ut perspiciatis unde omnis iste natus error sit voluptatem accusantium doloremque laudantium, totam rem aperiam.</p>
+            <p>Choose how to retrive most rated contents</p>
+            <form onsubmit="App.getMostRated(); return false;">
+              <select name="category" id="category" class="custom-select mb-3">
+                <option value="none" selected>Choose a category</option>
+                <option value="appreciation">Appreciation of the content</option>
+                <option value="quality">Content quality</option>
+                <option value="price">Price Fairness</option>
+              </select>
+              <select onchange="App.selectedFilter('rated'); return false;" name="filterrated" id="filterrated" class="custom-select mb-3">
+                <option selected>Choose</option>
+                <option value="book">Author</option>
+                <option value="movie">Genre</option>
+              </select>
+              <select style="display:none;" name="ratedbygenreinput" id="ratedbygenreinput" class="custom-select mb-3">
+                <option selected>Choose genre</option>
+                <option value="book">Book</option>
+                <option value="movie">Movie</option>
+                <option value="music">Music</option>
+              </select>
+              <div class="form-group">
+                <input type="text" style="display:none;" class="form-control" id="ratedbyauthorinput" placeholder="Enter author"
+                  name="latestby">
+              </div>
+              <button type="submit" class="btn btn-primary" id="ratedSubmit"><span class="fa fa-search"></span> Search</button>
+            </form>
+            <div class="my-list">
+              <ul class="list-group" id="ratedContentList">
+              </ul>
+            </div>
           </div>
         </div>
       </div>

@@ -46,7 +46,7 @@ contract Catalog {
     mapping (address => PremiumInfo) premiumUsers;
 
     /*
-    Content feedback includes 3 categories: appreciation of the content, content quality and price fairnes.
+    Content feedback includes 3 categories: appreciation of the content (category 0), content quality (category 1) and price fairness (category 2).
     Each category could be rated with a score from 0 to 5.
     So maximum rating is 5*3=15.
     */
@@ -245,9 +245,9 @@ contract Catalog {
         return mostRated.average;
     }
 
-    function GetMostRated(bytes32 _category) external view returns(bytes32){
-        if(_category == "price") return mostRated.price;
-        else if (_category == "quality") return mostRated.quality;
+    function GetMostRated(uint _category) external view returns(bytes32){
+        if(_category == 2) return mostRated.price;
+        else if (_category == 1) return mostRated.quality;
         else return mostRated.appreciation;
     }
 
@@ -255,9 +255,9 @@ contract Catalog {
         return genreToMostRated[_genre].average;
     }
 
-    function GetMostRatedByGenre(bytes32 _genre, bytes32 _category) external view returns(bytes32){
-        if(_category == "price") return genreToMostRated[_genre].price;
-        else if (_category == "quality") return genreToMostRated[_genre].quality;
+    function GetMostRatedByGenre(bytes32 _genre, uint _category) external view returns(bytes32){
+        if(_category == 2) return genreToMostRated[_genre].price;
+        else if (_category == 1) return genreToMostRated[_genre].quality;
         else return genreToMostRated[_genre].appreciation;
     }
 
@@ -265,9 +265,9 @@ contract Catalog {
         return authorToMostRated[_author].average;
     }
 
-    function GetMostRatedByAuthor(bytes32 _author, bytes32 _category) external view returns(bytes32){
-        if(_category == "price") return authorToMostRated[_author].price;
-        else if (_category == "quality") return authorToMostRated[_author].quality;
+    function GetMostRatedByAuthor(bytes32 _author, uint _category) external view returns(bytes32){
+        if(_category == 2) return authorToMostRated[_author].price;
+        else if (_category == 1) return authorToMostRated[_author].quality;
         else return authorToMostRated[_author].appreciation;
     }
 
