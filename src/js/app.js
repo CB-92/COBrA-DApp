@@ -4,6 +4,8 @@ App = {
   catalogAddress: null,
   premiumGift: false,
   contentTitle: null,
+  categoryEnum: null,
+  genreEnum: null,
 
   init: function() {
     return App.initWeb3();
@@ -59,6 +61,9 @@ App = {
               console.log("MusicContentManagement contract initialized");
 
               premiumGift = false;
+              categoryEnum = {"none":0, "appreciation":1, "quality":2, "price":3};
+              genreEnum = { "book": "626f6f6b", "movie": "6d6f766965", "music":"736f6e67"};              
+
               App.listenForEvents();
 
               return App.render();
@@ -344,8 +349,6 @@ App = {
       switch (filter) {
         case "Author":
           temp = $("#latestbyauthorinput").val();
-          console.log(temp);
-          console.log(web3.fromUtf8(temp));
           
           var r = await instance.GetLatestByAuthor(web3.fromUtf8(temp), {from: App.account});
           result = web3.toUtf8(r);
@@ -354,32 +357,10 @@ App = {
           break;
 
         case "Genre":
-          temp = $("#latestbygenreinput option:selected").text();
-          console.log(temp);
-          switch (temp) {
-            case "Book":
-              var r = await instance.GetLatestByGenre("626f6f6b", { from: App.account });
-              result = web3.toUtf8(r);
-              console.log(result);
+          temp = $("#latestbygenreinput option:selected").val();
+          var r = await instance.GetLatestByGenre(genreEnum[temp], { from: App.account });
+          result = web3.toUtf8(r);
               
-              break;
-            case "Movie":
-              var r = await instance.GetLatestByGenre("6d6f766965", { from: App.account });
-              result = web3.toUtf8(r);
-              console.log(result);
-
-              break;
-            case "Music":
-              var r = await instance.GetLatestByGenre("736f6e67", { from: App.account });
-              result = web3.toUtf8(r);
-              console.log(result);
-
-              break;
-            default:
-              alert("You have to choose a genre!");
-              break;
-          }
-    
           break;
         default:
           break;
@@ -415,29 +396,9 @@ App = {
           break;
 
         case "Genre":
-          temp = $("#popularbygenreinput option:selected").text();
-          console.log(temp);
-          switch (temp) {
-            case "Book":
-              result = await instance.GetMostPopularByGenre("626f6f6b", { from: App.account });
-              console.log(web3.toUtf8(""+result));
+          temp = $("#popularbygenreinput option:selected").val();
+          result = await instance.GetMostPopularByGenre(genreEnum[temp], {from: App.account});
 
-              break;
-            case "Movie":
-              result = await instance.GetMostPopularByGenre("6d6f766965", { from: App.account });
-              console.log(web3.toUtf8(""+result));
-
-              break;
-            case "Music":
-              result = await instance.GetMostPopularByGenre("736f6e67", { from: App.account });
-              console.log(web3.toUtf8(""+result));
-
-              break;
-            default:
-              alert("You have to choose a genre!");
-              break;
-          }
-          
           break;
         default:
           break;
@@ -461,137 +422,26 @@ App = {
     list.empty();
     var filter = $("#filterrated option:selected").text();
     var category = $("#category option:selected").val();
-    console.log("Category: "+category+ " by "+ filter);
+    console.log("Category: "+categoryEnum[category]+ " by "+ filter);    
 
     App.contracts.Catalog.deployed().then(async (instance) => {
-      switch (category) {
-        case "none":
-        if (filter == "Genre") {
-          temp = $("#ratedbygenreinput option:selected").text();
-          switch (temp) {
-            case "Book":
-              result = await instance.GetMostRatedByGenre("626f6f6b", { from: App.account });
-              console.log(web3.toUtf8("" + result));
-
-              break;
-            case "Movie":
-              result = await instance.GetMostRatedByGenre("6d6f766965", { from: App.account });
-              console.log(web3.toUtf8("" + result));
-
-              break;
-            case "Music":
-              result = await instance.GetMostRatedByGenre("736f6e67", { from: App.account });
-              console.log(web3.toUtf8("" + result));
-
-              break;
-            default:
-              alert("You have to choose a genre!");
-              break;
-          }
-        } else  if(filter == "Author"){
+      switch (filter) {
+        case "Author":
           temp = $("#ratedbyauthorinput").val();
-          result = await instance.GetMostRatedByAuthor(web3.toUtf8(temp), {from: App.account});
-        } else{
-          result = await instance.GetMostRated({ from: App.account });
-        }
-        break;
-        
-        case "appreciation":
-        if (filter == "Genre") {
-          temp = $("#ratedbygenreinput option:selected").text();
-          switch (temp) {
-            case "Book":
-              result = await instance.GetMostRatedByGenre("626f6f6b", 0, { from: App.account });
-              console.log(web3.toUtf8("" + result));
+          result = await instance.GetMostRatedByAuthor(web3.toUtf8(temp), categoryEnum[category],{ from: App.account });
 
-              break;
-            case "Movie":
-              result = await instance.GetMostRatedByGenre("6d6f766965", 0, { from: App.account });
-              console.log(web3.toUtf8("" + result));
+          break;
 
-              break;
-            case "Music":
-              result = await instance.GetMostRatedByGenre("736f6e67", 0, { from: App.account });
-              console.log(web3.toUtf8("" + result));
+        case "Genre":
+          temp = $("#popularbygenreinput option:selected").val();
+          result = await instance.GetMostRatedByGenre(genreEnum[temp], categoryEnum[category], { from: App.account });
 
-              break;
-            default:
-              alert("You have to choose a genre!");
-              break;
-          }
-        } else if (filter == "Author") {
-          temp = $("#ratedbyauthorinput").val();
-          result = await instance.GetMostRatedByAuthor(web3.toUtf8(temp), 0, { from: App.account });
-        } else {
-          result = await instance.GetMostRated(0, { from: App.account });
-        }
-        break;
-      
-      case "quality":
-        if (filter == "Genre") {
-          temp = $("#ratedbygenreinput option:selected").text();
-          switch (temp) {
-            case "Book":
-              result = await instance.GetMostRatedByGenre("626f6f6b", 1, { from: App.account });
-              console.log(web3.toUtf8("" + result));
+          break;
+        default:
+          result = await instance.GetMostRated(categoryEnum[category], {from: App.account});
+          break;
+      }
 
-              break;
-            case "Movie":
-              result = await instance.GetMostRatedByGenre("6d6f766965", 1, { from: App.account });
-              console.log(web3.toUtf8("" + result));
-
-              break;
-            case "Music":
-              result = await instance.GetMostRatedByGenre("736f6e67", 1, { from: App.account });
-              console.log(web3.toUtf8("" + result));
-
-              break;
-            default:
-              alert("You have to choose a genre!");
-              break;
-          }
-        } else if (filter == "Author") {
-          temp = $("#ratedbyauthorinput").val();
-          result = await instance.GetMostRatedByAuthor(web3.toUtf8(temp), 1, { from: App.account });
-        } else {
-          result = await instance.GetMostRated(1, { from: App.account });
-        }
-        break;
-
-      case "price":
-        if (filter == "Genre") {
-          temp = $("#ratedbygenreinput option:selected").text();
-          switch (temp) {
-            case "Book":
-              result = await instance.GetMostRatedByGenre("626f6f6b", 2, { from: App.account });
-              console.log(web3.toUtf8("" + result));
-
-              break;
-            case "Movie":
-              result = await instance.GetMostRatedByGenre("6d6f766965", 2, { from: App.account });
-              console.log(web3.toUtf8("" + result));
-
-              break;
-            case "Music":
-              result = await instance.GetMostRatedByGenre("736f6e67", 2, { from: App.account });
-              console.log(web3.toUtf8("" + result));
-
-              break;
-            default:
-              alert("You have to choose a genre!");
-              break;
-          }
-        } else if (filter == "Author") {
-          temp = $("#ratedbyauthorinput").val();
-          result = await instance.GetMostRatedByAuthor(web3.toUtf8(temp), 2, { from: App.account });
-        } else {
-          result = await instance.GetMostRated(2, { from: App.account });
-        }
-        break;
-    
-      default:
-        break;
-    }
       var r = web3.toUtf8(result);
       var contentTemplate = "<li class=\"list-group-item d-flex justify-content-between align-items-center\">"
         + r + "<div class = \"ml-auto\"><a href =\"#\" onclick=\"App.buyContent('" + r + "'); return false;\"><span class=\"fa fa-shopping-cart list-icon\"></span></a>"

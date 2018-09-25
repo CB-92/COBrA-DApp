@@ -45,8 +45,10 @@ contract Catalog {
     /* user address => block number of premium subscription*/
     mapping (address => PremiumInfo) premiumUsers;
 
+    enum Category {none, appreciation, quality, price}
+
     /*
-    Content feedback includes 3 categories: appreciation of the content (category 0), content quality (category 1) and price fairness (category 2).
+    Content feedback includes 3 categories: appreciation of the content, content quality and price fairness.
     Each category could be rated with a score from 0 to 5.
     So maximum rating is 5*3=15.
     */
@@ -241,24 +243,22 @@ contract Catalog {
         return tmp;
     }
 
-    function GetMostRated() external view returns (bytes32){
-        return mostRated.average;
-    }
-
+    /* Returns the title of the most rated content according to a certain category
+    (category is "none"  if not specified by the user and returns the average) */
     function GetMostRated(uint _category) external view returns(bytes32){
-        if(_category == 2) return mostRated.price;
-        else if (_category == 1) return mostRated.quality;
-        else return mostRated.appreciation;
+        if(_category == uint(Category.none)) return mostRated.average;
+        else if (_category == uint(Category.appreciation)) return mostRated.appreciation;
+        else if (_category == uint(Category.quality)) return mostRated.quality;  
+        else return mostRated.price;
     }
 
-    function GetMostRatedByGenre(bytes32 _genre) external view returns(bytes32){
-        return genreToMostRated[_genre].average;
-    }
-
+    /* Returns the title of the most rated content  with a specific genre according to a certain category
+    (category is "none"  if not specified by the user and returns the average) */
     function GetMostRatedByGenre(bytes32 _genre, uint _category) external view returns(bytes32){
-        if(_category == 2) return genreToMostRated[_genre].price;
-        else if (_category == 1) return genreToMostRated[_genre].quality;
-        else return genreToMostRated[_genre].appreciation;
+        if(_category == uint(Category.none)) return genreToMostRated[_genre].average;
+        else if (_category == uint(Category.appreciation)) return genreToMostRated[_genre].appreciation;
+        else if (_category == uint(Category.quality)) return genreToMostRated[_genre].quality;  
+        else return genreToMostRated[_genre].price;
     }
 
     function GetMostRatedByAuthor(bytes32 _author) external view returns(bytes32){
@@ -266,9 +266,10 @@ contract Catalog {
     }
 
     function GetMostRatedByAuthor(bytes32 _author, uint _category) external view returns(bytes32){
-        if(_category == 2) return authorToMostRated[_author].price;
-        else if (_category == 1) return authorToMostRated[_author].quality;
-        else return authorToMostRated[_author].appreciation;
+        if(_category == uint(Category.none)) return authorToMostRated[_author].average;
+        else if (_category == uint(Category.appreciation)) return authorToMostRated[_author].appreciation;
+        else if (_category == uint(Category.quality)) return authorToMostRated[_author].quality;  
+        else return authorToMostRated[_author].price;
     }
 
     function LeaveFeedback(bytes32 _content, uint _price, uint _appreciation, uint _quality) external onlyIfConsumed(_content){
