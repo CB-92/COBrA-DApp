@@ -1,4 +1,4 @@
-pragma solidity ^0.4.23;
+pragma solidity ^0.5.0;
 import "./Catalog.sol";
 
 contract BaseContentManagement {
@@ -39,7 +39,7 @@ contract BaseContentManagement {
         users[_user].consumed = false;
     }
 
-    function consumeContent() external onlyIfAllowed() returns(bytes32[]){
+    function consumeContent() external onlyIfAllowed() returns(bytes32[] memory){
         users[msg.sender].allowed = false;
         users[msg.sender].consumed = true;
         if(catalog.IsPremium(msg.sender)==false){

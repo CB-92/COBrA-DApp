@@ -1,8 +1,8 @@
-pragma solidity ^0.4.23;
+pragma solidity ^0.5.0;
 import "./BaseContentManagement.sol";
 
 contract Catalog {
-    address public creator;
+    address payable public creator;
     uint premiumTime;
     uint public premiumPrice;
     bytes32[] contentList;
@@ -10,7 +10,7 @@ contract Catalog {
     uint allTheViews;
 
     struct ContentMetadata{
-        address authorAddress;
+        address payable authorAddress;
         bool isLinked;
         BaseContentManagement content;
         uint views;
@@ -167,7 +167,7 @@ contract Catalog {
         emit NewLinkedContent(_title);
     }
 
-    function GetStatistics() external view ifNotEmpty returns (bytes32[], uint[]) {
+    function GetStatistics() external view ifNotEmpty returns (bytes32[] memory, uint[] memory) {
         uint[] memory views = new uint[](contentList.length);
         for(uint i = 0; i < contentList.length; i++){
             views[i] = addedContents[contentList[i]].views;
@@ -175,11 +175,11 @@ contract Catalog {
         return (contentList, views);
     }
 
-    function GetContentList() external view returns (bytes32[]) {
+    function GetContentList() external view returns (bytes32[] memory) {
         return contentList;
     }
 
-    function GetNewContentsList(uint _x) external view ifNotEmpty returns (bytes32[]){
+    function GetNewContentsList(uint _x) external view ifNotEmpty returns (bytes32[] memory){
         bytes32[] memory latests = new bytes32[](_x);
         uint j = contentList.length - 1;
         for (uint i = _x - 1; i>=0; i--){
