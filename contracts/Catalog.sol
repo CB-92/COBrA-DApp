@@ -397,10 +397,15 @@ contract Catalog {
 
     // @notice to be simulated manually for the moment, with the frontend there will be a callback
     function CollectPayment(bytes32 _content) external checkViews(_content) onlyContent(_content) {
-        msg.sender.transfer(addedContents[_content].averageRating * addedContents[_content].requestedPrice);
+        /* base value = price*(avg rating / max rating) */
+        msg.sender.transfer(addedContents[_content].requestedPrice * (addedContents[_content].averageRating/15));
         /* #views to be payed = #views since last time - #views payed this time 
             So no views are are lost between the notification of available payment and collecting the payment */
         addedContents[_content].viewsSincePayed = addedContents[_content].viewsSincePayed - paymentDelay; 
+    }
+
+    function ContentOwner(bytes32 _content) external view onlyContent(_content) returns(address payable) {
+        return addedContents[_content].authorAddress;
     }
 
     function CloseCatalog() external onlyCreator{

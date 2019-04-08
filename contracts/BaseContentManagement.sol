@@ -52,5 +52,9 @@ contract BaseContentManagement {
     function hasConsumed(address _user) external view returns(bool){
         return users[_user].consumed;
     }
+
+    function close() external payable{
+        selfdestruct(catalog.ContentOwner(title));
+    }
     
 }
