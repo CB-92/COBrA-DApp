@@ -104,6 +104,13 @@ App = {
         
         instance.PaymentAvailable({}, {fromBlock: initialBlock, toBlock: 'latest'}).watch(function (error, event){
           console.log(event);
+          if(!error && event.args._owner==App.account){
+            toastHeader.contents().remove();
+            toastBody.contents().remove();
+            toastHeader.append("Payment Available");
+            toastBody.append('Now you can collect your reward for content '+web3.toUtf8(event.args._content)+"!");
+            $('.toast').toast('show');
+          }
         });
         
         instance.ClosedCatalog({}, {fromBlock: initialBlock, toBlock: 'latest'}).watch(function (error, event){

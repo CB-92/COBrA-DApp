@@ -34,7 +34,7 @@ contract Catalog {
     /* events */
     event AccessGranted(bytes32 _content, address _user);
     event NewLinkedContent(bytes32 _content);
-    event PaymentAvailable(bytes32 _content);
+    event PaymentAvailable(bytes32 _content, address _owner);
     event ClosedCatalog();
 
     struct PremiumInfo{
@@ -392,7 +392,7 @@ contract Catalog {
         addedContents[_content].viewsSincePayed++;
         allTheViews++;
         if(addedContents[_content].viewsSincePayed >= paymentDelay)
-            emit PaymentAvailable(_content);
+            emit PaymentAvailable(_content, addedContents[_content].authorAddress);
     }
 
     // @notice to be simulated manually for the moment, with the frontend there will be a callback
