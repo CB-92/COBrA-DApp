@@ -6,6 +6,7 @@ App = {
   contentTitle: null,
   categoryEnum: null,
   genreEnum: null,
+  listeningBlocks: 50,
 
   init: function() {
     return App.initWeb3();
@@ -78,7 +79,37 @@ App = {
   listenForEvents: function () {
     App.contracts.Catalog.deployed().then(async(instance) =>{
       web3.eth.getBlockNumber(function (error, block) {
-        // TODO: Event listeners
+        var initialBlock = block - App.listeningBlocks;
+        if(initialBlock < 0) initialBlock = 0;
+        
+        var toastHeader = $('#toastHeader');
+        var toastBody = $('#toastBody');
+
+        // Access granted to a content
+
+        instance.AccessGranted({}, {fromBlock: initialBlock, toBlock: 'latest'}).watch(function (error, event){
+
+          if(!error && event.args._user==App.account){
+            toastHeader.contents().remove();
+            toastBody.contents().remove();
+            toastHeader.append("Access Granted");
+            toastBody.append('Congratulations!\nNow you\'ve access to content '+web3.toUtf8(event.args._content)+".");
+            $('.toast').toast('show');
+          }
+        });
+
+        instance.NewLinkedContent({}, {fromBlock: initialBlock, toBlock: 'latest'}).watch(function (error, event){
+          console.log(event);
+        });
+        
+        instance.PaymentAvailable({}, {fromBlock: initialBlock, toBlock: 'latest'}).watch(function (error, event){
+          console.log(event);
+        });
+        
+        instance.ClosedCatalog({}, {fromBlock: initialBlock, toBlock: 'latest'}).watch(function (error, event){
+          console.log(event);
+        });
+
       });
     });
   },
@@ -171,6 +202,7 @@ App = {
       if(linkedContents>0){
         var contentList = result[0];
         var views = result[1];
+        console.log("Views: "+views);
         for (let i = 0; i < linkedContents; i++) {
           var title = web3.toUtf8(contentList[i]);
           var contentViews = views[i];
@@ -257,7 +289,8 @@ App = {
       }
     }).then(function () {
       $("#premiumGiftPar").hide();
-      $("#premiumGiftInput").hide();     
+      $("#premiumGiftInput").hide();
+      App.render(); 
     }).catch(function (error) {
       console.log(error);
     });
