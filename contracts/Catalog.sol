@@ -395,7 +395,6 @@ contract Catalog {
             emit PaymentAvailable(_content, addedContents[_content].authorAddress);
     }
 
-    // @notice to be simulated manually for the moment, with the frontend there will be a callback
     function CollectPayment(bytes32 _content) external checkViews(_content) onlyContent(_content) {
         /* base value = price*(avg rating / max rating) */
         msg.sender.transfer(addedContents[_content].requestedPrice * (addedContents[_content].averageRating/15));

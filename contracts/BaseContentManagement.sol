@@ -7,6 +7,7 @@ contract BaseContentManagement {
     bytes32 public genre;
     bytes32[] internal content;
     address internal catalogAddress;
+    address payable owner;
     Catalog internal catalog;
 
     event ConsumedContent(bytes32 _content, address _user);

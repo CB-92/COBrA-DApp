@@ -34,7 +34,7 @@
         <li><button type="button" id="premiumButton" class="btn btn-success" data-toggle="modal" data-target="#premiumModal">Buy or gift a Premium subscription!</button></li>
       </ul>
     </nav>
-    <div class="container-fluid">
+    <div id="main_container" class="container-fluid">
       <div id="loader" class="loader"></div>
       <div id="content" class="container-fluid" style="display: none;">
         
@@ -144,19 +144,14 @@
           </div>
         </div>
       </div>
-      <button type="button" class="btn btn-primary btn-circle" data-toggle="modal" data-target="#addContentModal"><span class="fa fa-plus"></span>
+
+     
+      <button id="notificationButton" type="button" class="btn btn-primary btn-circle" data-toggle="modal" data-target="#notificationModal"><span class="fa fa-bell"></span>
+      </button>
+    
+      <button id="addContentButton" type="button" class="btn btn-primary btn-circle" data-toggle="modal" data-target="#addContentModal"><span class="fa fa-plus"></span>
       </button>
 
-      <!-- Toast messages -->
-      <div class="toast" data-autohide="false">
-        <div class="toast-header">
-          <strong id="toastHeader" class="mr-auto text-primary">Toast Header</strong>
-          <button type="button" class="ml-2 mb-1 close" data-dismiss="toast">&times;</button>
-        </div>
-        <div id="toastBody" class="toast-body">
-          Some text inside the toast body
-        </div>
-      </div>
       
       <!-- Add content modal -->
       <div class="modal" id="addContentModal">
@@ -229,6 +224,30 @@
           </div>
         </div>
       </div>
+
+      <!-- Subscribe to notification modal -->
+      <div class="modal" id="notificationModal">
+        <div class="modal-dialog">
+          <div class="modal-content">
+            
+            <!-- Modal Header -->
+            <div class="modal-header">
+              <h4 class="modal-title">Get all the content you want!</h4>
+              <button type="button" class="close" data-dismiss="modal"></button>
+            </div>
+            
+            <!-- Modal body -->
+            <div class="modal-body">
+              <div class="custom-control custom-checkbox mb-3">
+                <input type="checkbox" class="custom-control-input" id="giftPremium" name="giftPremium" onchange="App.giftPremiumChecked(this);">
+                <label class="custom-control-label" for="giftPremium">It's a gift</label>
+              </div>
+              <p style="display: none;" id="premiumGiftPar">Insert below the address of the user you want to gift a Premium subscription!</p>
+              <div style="display: none;" class="form-group" id="premiumGiftInput">
+                <label for="user">User address:</label>
+                <input type="text" class="form-control" id="address" placeholder="Enter recipient address" name="address">
+              </div>
+            </div>
       
       <!-- Premium modal -->
       <div class="modal" id="premiumModal">
@@ -345,7 +364,7 @@
             <!-- Modal footer -->
             <div class="modal-footer">
               <button type="button" class="btn btn-success" data-dismiss="modal" onclick="App.leaveFeedback(); return false;">Submit</button>
-              <button type="button" class="btn btn-danger" data-dismiss="modal">Close</button>
+              <button type="button" class="btn btn-danger" data-dismiss="modal" onclick="App.render(); return false;" >Close</button>
             </div>
 
           </div>

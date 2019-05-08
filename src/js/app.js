@@ -6,7 +6,7 @@ App = {
   contentTitle: null,
   categoryEnum: null,
   genreEnum: null,
-  listeningBlocks: 50,
+  listeningBlocks: 30,
 
   init: function() {
     return App.initWeb3();
@@ -75,46 +75,52 @@ App = {
     });
   },
 
+  appendNotification: function(title, text){
+    var mainContainer = $('#main_container');
+
+    var toast = "<div class=\"toast\" data-autohide=\"false\"><div class=\"toast-header\"><strong class=\"mr-auto text-primary\">"+title+"</strong><button type=\"button\" class=\"ml-2 mb-1 close\" onclick=\"$(this).closest('.toast').remove(); \">&times;</button></div><div class=\"toast-body\">"+text+"</div></div>";
+
+    mainContainer.append(toast);
+
+    $('.toast').toast('show');
+
+  },
+  
+
   // Listen for events emitted from the contract
   listenForEvents: function () {
     App.contracts.Catalog.deployed().then(async(instance) =>{
       web3.eth.getBlockNumber(function (error, block) {
         var initialBlock = block - App.listeningBlocks;
         if(initialBlock < 0) initialBlock = 0;
-        
-        var toastHeader = $('#toastHeader');
-        var toastBody = $('#toastBody');
 
         // Access granted to a content
 
         instance.AccessGranted({}, {fromBlock: initialBlock, toBlock: 'latest'}).watch(function (error, event){
 
           if(!error && event.args._user==App.account){
-            toastHeader.contents().remove();
-            toastBody.contents().remove();
-            toastHeader.append("Access Granted");
-            toastBody.append('Congratulations!\nNow you\'ve access to content '+web3.toUtf8(event.args._content)+".");
-            $('.toast').toast('show');
+            App.appendNotification("Access Granted", 'Congratulations!\nNow you\'ve access to content '+web3.toUtf8(event.args._content)+".");
           }
         });
+
 
         instance.NewLinkedContent({}, {fromBlock: initialBlock, toBlock: 'latest'}).watch(function (error, event){
           console.log(event);
         });
         
         instance.PaymentAvailable({}, {fromBlock: initialBlock, toBlock: 'latest'}).watch(function (error, event){
-          console.log(event);
-          if(!error && event.args._owner==App.account){
-            toastHeader.contents().remove();
-            toastBody.contents().remove();
-            toastHeader.append("Payment Available");
-            toastBody.append('Now you can collect your reward for content '+web3.toUtf8(event.args._content)+"!");
-            $('.toast').toast('show');
+          //console.log(event);
+          if(!error){
+            console.log("Owner: "+event.args._owner);
+            console.log("App account: "+App.account)
+
+            App.appendNotification("Payment Available", 'Now you can collect your reward for content '+web3.toUtf8(event.args._content)+"!");
           }
         });
         
         instance.ClosedCatalog({}, {fromBlock: initialBlock, toBlock: 'latest'}).watch(function (error, event){
           console.log(event);
+          alert('This catalog has been closed by the owner!');
         });
 
       });
