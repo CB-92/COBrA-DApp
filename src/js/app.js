@@ -80,6 +80,7 @@ App = {
               categoryEnum = {"none":0, "appreciation":1, "quality":2, "price":3};
               genreEnum = { "book": "626f6f6b", "movie": "6d6f766965", "music":"736f6e67"};
 
+              preferences = [];
               App.listenForEvents();
 
               return App.render();
@@ -111,8 +112,9 @@ App = {
 
       console.log("Numero preferenze: " + interests);
 
-      for(var i=0; i<interests; i++)
-          App.preferences.push(await instance.interests(App.account, i));
+      App.preferences = await instance.GetInterests();
+
+      console.log("Preferences' lenght: "+App.preferences.length);
 
       web3.eth.getBlockNumber(function (error, block) {
         var initialBlock = block - App.listeningBlocks;
@@ -258,8 +260,8 @@ App = {
       loader.hide();
       content.show();
       console.log('User preferences:');
-      for(var i in preferences){
-        console.log(preferences[i]);
+      for(var i in App.preferences){
+        console.log(web3.toUtf8(App.preferences[i]));
       }
     }).catch(function (error) {
       console.warn(error);
@@ -292,13 +294,13 @@ App = {
         default:
           break;
       }
-
-      App.render();
       
     }).catch(function (error) {
       console.log(error);
       alert("An error occured while processing the transaction!");
     });
+
+    App.render();
 
   },
 

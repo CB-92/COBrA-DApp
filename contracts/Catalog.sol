@@ -283,6 +283,10 @@ contract Catalog {
         return userInterests[msg.sender].length;
     }
 
+    function GetInterests() external view returns(bytes32[] memory){
+        return userInterests[msg.sender];
+    }
+
 
 
     function LeaveFeedback(bytes32 _content, uint _price, uint _appreciation, uint _quality) external onlyIfConsumed(_content){
