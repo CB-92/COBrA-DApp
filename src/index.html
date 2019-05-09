@@ -232,22 +232,41 @@
             
             <!-- Modal Header -->
             <div class="modal-header">
-              <h4 class="modal-title">Get all the content you want!</h4>
+              <h4 class="modal-title">Subscribe to new content notifications!</h4>
               <button type="button" class="close" data-dismiss="modal"></button>
             </div>
             
             <!-- Modal body -->
             <div class="modal-body">
-              <div class="custom-control custom-checkbox mb-3">
-                <input type="checkbox" class="custom-control-input" id="giftPremium" name="giftPremium" onchange="App.giftPremiumChecked(this);">
-                <label class="custom-control-label" for="giftPremium">It's a gift</label>
-              </div>
-              <p style="display: none;" id="premiumGiftPar">Insert below the address of the user you want to gift a Premium subscription!</p>
-              <div style="display: none;" class="form-group" id="premiumGiftInput">
-                <label for="user">User address:</label>
-                <input type="text" class="form-control" id="address" placeholder="Enter recipient address" name="address">
-              </div>
+              <p>Register your interests, so you'll be notified when a new content of thath kind is added!</p>
+              <form onsubmit="App.addInterest(); return false;">
+                <select onchange="App.selectedFilter('interest'); return false;" name="filterinterst" id="filterinterest" class="custom-select mb-3">
+                  <option selected>Choose</option>
+                  <option value="author">Author</option>
+                  <option value="genre">Genre</option>
+                </select>
+                <select  style="display:none;" name="interestbygenreinput" id="interestbygenreinput" class="custom-select mb-3">
+                  <option selected>Choose genre</option>
+                  <option value="book">Book</option>
+                  <option value="movie">Movie</option>
+                  <option value="music">Music</option>
+                </select>
+                <div class="form-group">
+                  <input type="text" style="display:none;" class="form-control" id="interestbyauthorinput" placeholder="Enter author" name="interestby">
+                </div>
+                <button type="submit" class="btn btn-primary" id="interestSubmit"><span class="fa fa-check"></span> Add interest</button>
+              </form> 
             </div>
+
+            <!-- Modal footer -->
+            <div class="modal-footer">
+              <button type="button" class="btn btn-danger" data-dismiss="modal">Close</button>
+            </div>
+
+
+          </div>
+        </div>
+      </div>
       
       <!-- Premium modal -->
       <div class="modal" id="premiumModal">

@@ -7,6 +7,8 @@ App = {
   categoryEnum: null,
   genreEnum: null,
   listeningBlocks: 30,
+  preferences: [],
+
 
   init: function() {
     return App.initWeb3();
@@ -16,8 +18,21 @@ App = {
     // TODO: refactor conditional
     if (typeof web3 !== 'undefined') {
       // If a web3 instance is already provided by Meta Mask.
-      App.web3Provider = web3.currentProvider;
-      web3 = new Web3(web3.currentProvider);
+      //App.web3Provider = web3.currentProvider;
+      //web3 = new Web3(web3.currentProvider);
+      App.web3Provider = window.ethereum; // New standard!!!
+      web3 = new Web3(App.web3Provider);
+
+      //
+      try {
+        ethereum.enable().then(async() => {
+            console.log("New Metamask privacy feature ok!");
+        });
+      } catch(error) {
+        console.log("Error in testing new Metamask privacy feature!");
+        console.log(error);
+      }
+
     } else {
       // Specify default instance if no web3 instance provided
       App.web3Provider = new Web3.providers.HttpProvider('http://localhost:7545');
@@ -63,7 +78,7 @@ App = {
 
               premiumGift = false;
               categoryEnum = {"none":0, "appreciation":1, "quality":2, "price":3};
-              genreEnum = { "book": "626f6f6b", "movie": "6d6f766965", "music":"736f6e67"};              
+              genreEnum = { "book": "626f6f6b", "movie": "6d6f766965", "music":"736f6e67"};
 
               App.listenForEvents();
 
@@ -90,6 +105,15 @@ App = {
   // Listen for events emitted from the contract
   listenForEvents: function () {
     App.contracts.Catalog.deployed().then(async(instance) =>{
+
+      // Load user intersts
+      const interests = await instance.GetInterestsNum();
+
+      console.log("Numero preferenze: " + interests);
+
+      for(var i=0; i<interests; i++)
+          App.preferences.push(await instance.interests(App.account, i));
+
       web3.eth.getBlockNumber(function (error, block) {
         var initialBlock = block - App.listeningBlocks;
         if(initialBlock < 0) initialBlock = 0;
@@ -114,7 +138,7 @@ App = {
             console.log("Owner: "+event.args._owner);
             console.log("App account: "+App.account)
 
-            App.appendNotification("Payment Available", 'Now you can collect your reward for content '+web3.toUtf8(event.args._content)+"!");
+            App.appendNotification("Author Payed", 'User '+ event.args._owner +' has been rewarded for content '+web3.toUtf8(event.args._content)+"!");
           }
         });
         
@@ -184,8 +208,9 @@ App = {
 
     // Load account data
     web3.eth.getCoinbase(function (err, account) {
-      if (err === null) {
+      if (err == null) {
         App.account = account;
+        console.log("Your Account: " + account);
         //$("#accountAddress").html("Your Account: " + account);
       }
     });
@@ -232,9 +257,49 @@ App = {
       $('.modal-backdrop').remove();
       loader.hide();
       content.show();
+      console.log('User preferences:');
+      for(var i in preferences){
+        console.log(preferences[i]);
+      }
     }).catch(function (error) {
       console.warn(error);
     });
+  },
+
+  addInterest: function(){
+    var filter = $("#filterinterest option:selected").text();
+
+    App.contracts.Catalog.deployed().then(async (instance) => {
+      
+      switch (filter) {
+        case "Author":
+          var temp = $("#interestbyauthorinput").val();
+          
+          console.log("You registered an interest for the author "+temp);
+          
+          await instance.AddInterest(web3.fromUtf8(temp), {from:App.account});
+          
+          break;
+  
+        case "Genre":
+          var temp = $("#interestbygenreinput option:selected").val();
+          
+          console.log("You registered and interest for the genre "+temp);
+  
+          await instance.AddInterest(web3.fromUtf8(temp), {from:App.account});
+  
+          break;
+        default:
+          break;
+      }
+
+      App.render();
+      
+    }).catch(function (error) {
+      console.log(error);
+      alert("An error occured while processing the transaction!");
+    });
+
   },
 
   selectedGenre: function () {

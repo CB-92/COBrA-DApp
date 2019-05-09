@@ -66,6 +66,7 @@ contract Catalog {
     MostRated mostRated;
     mapping (bytes32 => MostRated) authorToMostRated;
     mapping (bytes32 => MostRated) genreToMostRated;
+    mapping (address => bytes32[]) userInterests;
 
     /* modifier to restrict a functionality only to Premium users */
     modifier restrictToPremium{
@@ -272,6 +273,18 @@ contract Catalog {
         else return authorToMostRated[_author].price;
     }
 
+    /* Deal with user preferences */
+
+    function AddInterest(bytes32 _interest) external {
+        userInterests[msg.sender].push(_interest);
+    }
+
+    function GetInterestsNum() external view returns(uint){
+        return userInterests[msg.sender].length;
+    }
+
+
+
     function LeaveFeedback(bytes32 _content, uint _price, uint _appreciation, uint _quality) external onlyIfConsumed(_content){
         uint average = (_price + _appreciation + _quality) / 3;
         bytes32 author = addedContents[_content].content.author();
@@ -398,6 +411,7 @@ contract Catalog {
     function CollectPayment(bytes32 _content) external checkViews(_content) onlyContent(_content) {
         /* base value = price*(avg rating / max rating) */
         msg.sender.transfer(addedContents[_content].requestedPrice * (addedContents[_content].averageRating/15));
+
         /* #views to be payed = #views since last time - #views payed this time 
             So no views are are lost between the notification of available payment and collecting the payment */
         addedContents[_content].viewsSincePayed = addedContents[_content].viewsSincePayed - paymentDelay; 
