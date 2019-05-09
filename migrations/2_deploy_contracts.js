@@ -16,5 +16,21 @@ if (typeof web3 !== 'undefined') {
 }
 
 module.exports = function (deployer) {
-    deployer.deploy(Catalog);
+
+    deployer.then(async () => {
+
+        const catalogAddress = web3.eth.accounts[0];
+
+        console.log("Catalog address: "+catalogAddress);
+
+        const author1 = web3.eth.accounts[1];
+        const author2 = web3.eth.accounts[2];
+        const author3 = web3.eth.accounts[3];
+
+        console.log("\n----Deploying Catalog----\n");
+        const catalog = await deployer.deploy(Catalog);
+        console.log("\n----Catalog deployed ----\n");
+
+
+    });
 };

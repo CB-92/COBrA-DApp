@@ -33,7 +33,7 @@ contract Catalog {
 
     /* events */
     event AccessGranted(bytes32 _content, address _user);
-    event NewLinkedContent(bytes32 _content);
+    event NewLinkedContent(bytes32 _content, bytes32 _author, bytes32 _genre);
     event PaymentAvailable(bytes32 _content, address _owner);
     event ClosedCatalog();
 
@@ -165,7 +165,7 @@ contract Catalog {
         addedContents[_title].isLinked = true;
         addedContents[_title].averageRating = 0;
         addedContents[_title].requestedPrice = _requestedPrice;
-        emit NewLinkedContent(_title);
+        emit NewLinkedContent(_title, addedContents[_title].content.author(), addedContents[_title].content.genre());
     }
 
     function GetStatistics() external view ifNotEmpty returns (bytes32[] memory, uint[] memory) {
