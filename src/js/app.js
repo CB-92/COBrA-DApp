@@ -132,6 +132,9 @@ App = {
 
         instance.NewLinkedContent({}, {fromBlock: initialBlock, toBlock: 'latest'}).watch(function (error, event){
           console.log(event);
+
+          if(!error && (App.preferences.indexOf()) ){
+          }
         });
         
         instance.PaymentAvailable({}, {fromBlock: initialBlock, toBlock: 'latest'}).watch(function (error, event){
@@ -573,6 +576,9 @@ App = {
     var genre = $("#genre option:selected").text();
     var encoding = $("#encoding").val();
     var price = parseInt($("#price").val());
+
+    console.log("Content metadata:\nTitle: "+title+", author: "+author+", genre: "+genre+", encoding: "+encoding+", price: "+price);
+
     switch(genre){
       case "Book":
         var pages = parseInt($("#pages").val());

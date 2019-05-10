@@ -165,7 +165,7 @@ contract Catalog {
         addedContents[_title].isLinked = true;
         addedContents[_title].averageRating = 0;
         addedContents[_title].requestedPrice = _requestedPrice;
-        emit NewLinkedContent(_title, addedContents[_title].content.author(), addedContents[_title].content.genre());
+        //emit NewLinkedContent(_title, addedContents[_title].content.author(), addedContents[_title].content.genre());
     }
 
     function GetStatistics() external view ifNotEmpty returns (bytes32[] memory, uint[] memory) {

@@ -35,7 +35,7 @@ contract BaseContentManagement {
         _;
     }
 
-    function grantAccess(address _user) external isCatalog{
+    function grantAccess(address _user) external isCatalog(){
         users[_user].allowed = true;
         users[_user].consumed = false;
     }

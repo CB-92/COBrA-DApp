@@ -19,17 +19,31 @@ module.exports = function (deployer) {
 
     deployer.then(async () => {
 
-        const catalogAddress = web3.eth.accounts[0];
+        e = await web3.eth.getAccounts();
+        console.log("Accounts:\n" + e);
 
-        console.log("Catalog address: "+catalogAddress);
+        const catalogOwner = e[0];
 
-        const author1 = web3.eth.accounts[1];
-        const author2 = web3.eth.accounts[2];
-        const author3 = web3.eth.accounts[3];
+        console.log("Catalog address: "+catalogOwner);
+
+        const author1 = e[1];
+        const author2 = e[2];
+        const author3 = e[3];
 
         console.log("\n----Deploying Catalog----\n");
-        const catalog = await deployer.deploy(Catalog);
-        console.log("\n----Catalog deployed ----\n");
+        const catalog = await deployer.deploy(Catalog, {from: catalogOwner});
+        const catalogAddress = await catalog.address;
+
+        console.log("\nCatalog address is: "+catalogAddress);   
+
+        const title1 = web3.utils.asciiToHex("Per chi suona la campana");
+        const artist1 = web3.utils.asciiToHex("Ernest Hemingway");
+        const encoding1 = web3.utils.asciiToHex("epub");
+        const price1 = parseInt("20");
+        const pages1 = parseInt("547");
+
+        console.log("\n--- Deploying content contract  ---\n")
+        const content1 = await deployer.deploy(BookContent, title1, artist1, encoding1, pages1, catalogAddress, price1, {from:author1});
 
 
     });
