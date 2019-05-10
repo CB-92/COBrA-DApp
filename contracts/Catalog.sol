@@ -34,6 +34,7 @@ contract Catalog {
     /* events */
     event AccessGranted(bytes32 _content, address _user);
     event NewLinkedContent(bytes32 _content, bytes32 _author, bytes32 _genre);
+    event ContentConsumed(bytes32 _content, address _user);
     event PaymentAvailable(bytes32 _content, address _owner);
     event ClosedCatalog();
 
@@ -156,7 +157,7 @@ contract Catalog {
         return uint(contentList.length);
     }
 
-    function LinkToTheCatalog(bytes32 _title, uint _requestedPrice) external {
+    function LinkToTheCatalog(bytes32 _title, bytes32 _author, bytes32 _genre, uint _requestedPrice) external {
         contentList.push(_title);
         addedContents[_title].authorAddress = msg.sender;
         addedContents[_title].content = BaseContentManagement(msg.sender);
@@ -165,7 +166,8 @@ contract Catalog {
         addedContents[_title].isLinked = true;
         addedContents[_title].averageRating = 0;
         addedContents[_title].requestedPrice = _requestedPrice;
-        //emit NewLinkedContent(_title, addedContents[_title].content.author(), addedContents[_title].content.genre());
+
+        emit NewLinkedContent(_title, _author, _genre);
     }
 
     function GetStatistics() external view ifNotEmpty returns (bytes32[] memory, uint[] memory) {
@@ -366,7 +368,7 @@ contract Catalog {
         }
     }
 
-    function IsPremium(address _user) external view returns (bool){
+    function IsPremium(address _user) public view returns (bool){
         if(premiumUsers[_user].isPremium && 
         (premiumUsers[_user].blockNum + premiumTime > block.number))
         return true;
@@ -404,13 +406,18 @@ contract Catalog {
     }
 
     /* Add views to a content and emit an event if it reaches the views for a payment */
-    function AddViews(bytes32 _content) external onlyContent(_content){
-        addedContents[_content].views++;
-        addedContents[_content].viewsSincePayed++;
-        allTheViews++;
-        if(addedContents[_content].viewsSincePayed >= paymentDelay)
-            emit PaymentAvailable(_content, addedContents[_content].authorAddress);
+    function ConsumedContent(bytes32 _content, address _user) external onlyContent(_content){
+        if(IsPremium(_user)==false){
+            addedContents[_content].views++;
+            addedContents[_content].viewsSincePayed++;
+            allTheViews++;
+            if(addedContents[_content].viewsSincePayed >= paymentDelay)
+                emit PaymentAvailable(_content, addedContents[_content].authorAddress);
+        }
+
+        emit ContentConsumed(_content, _user);
     }
+
 
     function CollectPayment(bytes32 _content) external checkViews(_content) onlyContent(_content) {
         /* base value = price*(avg rating / max rating) */

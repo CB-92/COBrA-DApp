@@ -133,8 +133,13 @@ App = {
         instance.NewLinkedContent({}, {fromBlock: initialBlock, toBlock: 'latest'}).watch(function (error, event){
           console.log(event);
 
-          if(!error && (App.preferences.indexOf()) ){
+          if(!error && (App.preferences.indexOf(event.args._author)!=-1 || App.preferences.indexOf(event.args._genre)!=-1)){
+            App.appendNotification("New Linked Content", "There is a new content matching your interests!");
           }
+        });
+
+        instance.ContentConsumed({}, {fromBlock: initialBlock, toBlock: 'latest'}).watch(function (error, event){
+          console.log(event);
         });
         
         instance.PaymentAvailable({}, {fromBlock: initialBlock, toBlock: 'latest'}).watch(function (error, event){

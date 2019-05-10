@@ -10,8 +10,6 @@ contract BaseContentManagement {
     address payable owner;
     Catalog internal catalog;
 
-    event ConsumedContent(bytes32 _content, address _user);
-
     struct UserMetadata{
         bool allowed;
         bool consumed;
@@ -43,10 +41,8 @@ contract BaseContentManagement {
     function consumeContent() external onlyIfAllowed() returns(bytes32[] memory){
         users[msg.sender].allowed = false;
         users[msg.sender].consumed = true;
-        if(catalog.IsPremium(msg.sender)==false){
-            catalog.AddViews(title);
-        }
-        emit ConsumedContent(title, msg.sender);
+        catalog.ConsumedContent(title, msg.sender);
+
         return content;
     }
 

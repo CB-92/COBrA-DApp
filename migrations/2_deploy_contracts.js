@@ -45,6 +45,6 @@ module.exports = function (deployer) {
         console.log("\n--- Deploying content contract  ---\n")
         const content1 = await deployer.deploy(BookContent, title1, artist1, encoding1, pages1, catalogAddress, price1, {from:author1});
 
-
+        
     });
 };
