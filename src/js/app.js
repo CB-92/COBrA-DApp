@@ -138,8 +138,11 @@ App = {
           }
         });
 
-        instance.ContentConsumed({}, {fromBlock: initialBlock, toBlock: 'latest'}).watch(function (error, event){
+        instance.ContentConsumed({}, {fromBlock: block, toBlock: 'latest'}).watch(function (error, event){
           console.log(event);
+          if(App.account == event.args._user){
+            App.openFeedbackModal(event.args._content);
+          }
         });
         
         instance.PaymentAvailable({}, {fromBlock: initialBlock, toBlock: 'latest'}).watch(function (error, event){
@@ -391,7 +394,6 @@ App = {
       const manager = await App.contracts.BaseManager.at(address);
       var content = await manager.consumeContent({from: App.account});
       console.log(title +" consumed by "+App.account);
-      App.openFeedbackModal(title);
 
     }).catch(function (error) {
       console.log(error);
@@ -414,7 +416,7 @@ App = {
     var p = $('input[name=price]:checked', '#priceForm').val();
     console.log("Price fairness: "+p);
     App.contracts.Catalog.deployed().then(async (instance) => {
-      await instance.LeaveFeedback(web3.fromUtf8(contentTitle), p, a, q, {from: App.account});
+      await instance.LeaveFeedback(contentTitle, p, a, q, {from: App.account});
       App.render();
     }).catch(function (error) {
       console.log(error);
