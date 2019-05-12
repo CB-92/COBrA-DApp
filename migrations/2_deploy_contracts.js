@@ -42,8 +42,17 @@ module.exports = function (deployer) {
         const price1 = parseInt("20");
         const pages1 = parseInt("547");
 
+        const title2 = web3.utils.asciiToHex("Just Breathe");
+        const artist2 = web3.utils.asciiToHex("Pearl Jam");
+        const encoding2 = web3.utils.asciiToHex("mp3");
+        const price2 = 300;
+        const bitrate2 = 320;
+        const duration2 = 5;
+
         console.log("\n--- Deploying content contract  ---\n")
         const content1 = await deployer.deploy(BookContent, title1, artist1, encoding1, pages1, catalogAddress, price1, {from:author1});
+
+        const content2 = await deployer.deploy(MusicContent, title2, artist2, encoding2, bitrate2, duration2, catalogAddress, price2, {from:author2});
 
         
     });

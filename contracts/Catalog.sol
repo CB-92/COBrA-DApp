@@ -10,6 +10,7 @@ contract Catalog {
     uint allTheViews;
 
     struct ContentMetadata{
+        address payable owner;
         address payable authorAddress;
         bool isLinked;
         BaseContentManagement content;
@@ -157,9 +158,10 @@ contract Catalog {
         return uint(contentList.length);
     }
 
-    function LinkToTheCatalog(bytes32 _title, bytes32 _author, bytes32 _genre, uint _requestedPrice) external {
+    function LinkToTheCatalog(address payable _owner, bytes32 _title, bytes32 _author, bytes32 _genre, uint _requestedPrice) external {
         contentList.push(_title);
         addedContents[_title].authorAddress = msg.sender;
+        addedContents[_title].owner = _owner;
         addedContents[_title].content = BaseContentManagement(msg.sender);
         addedContents[_title].views = 0;
         addedContents[_title].viewsSincePayed = 0;
@@ -411,8 +413,11 @@ contract Catalog {
             addedContents[_content].views++;
             addedContents[_content].viewsSincePayed++;
             allTheViews++;
-            if(addedContents[_content].viewsSincePayed >= paymentDelay)
-                emit PaymentAvailable(_content, addedContents[_content].authorAddress);
+            if(addedContents[_content].viewsSincePayed >= paymentDelay){
+                addedContents[_content].owner.transfer(addedContents[_content].requestedPrice * (addedContents[_content].averageRating/15));
+                addedContents[_content].viewsSincePayed = addedContents[_content].viewsSincePayed - paymentDelay;
+                emit PaymentAvailable(_content, addedContents[_content].owner);
+            }
         }
 
         emit ContentConsumed(_content, _user);

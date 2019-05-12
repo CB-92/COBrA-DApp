@@ -15,7 +15,7 @@ contract BookContentManagement is BaseContentManagement{
         content.push(bytes32(_pages));
         catalogAddress = _catalogAddress;
         catalog = Catalog(catalogAddress);
-        catalog.LinkToTheCatalog(title, author, genre, _price);
+        catalog.LinkToTheCatalog(msg.sender, title, author, genre, _price);
     }
 }
 
@@ -39,7 +39,7 @@ contract MovieContentManagement is BaseContentManagement{
         content.push(bytes32(_height));
         catalogAddress = _catalogAddress;
         catalog = Catalog(catalogAddress);
-        catalog.LinkToTheCatalog(title, author, genre, _price);
+        catalog.LinkToTheCatalog(msg.sender, title, author, genre, _price);
     }
 }
 
@@ -58,6 +58,6 @@ contract MusicContentManagement is BaseContentManagement{
         content.push(bytes32(_duration));
         catalogAddress = _catalogAddress;
         catalog = Catalog(catalogAddress);
-        catalog.LinkToTheCatalog(title, author, genre, _price);
+        catalog.LinkToTheCatalog(msg.sender, title, author, genre, _price);
     }
 }

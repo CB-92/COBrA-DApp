@@ -122,7 +122,7 @@ App = {
 
         // Access granted to a content
 
-        instance.AccessGranted({}, {fromBlock: initialBlock, toBlock: 'latest'}).watch(function (error, event){
+        instance.AccessGranted({}, {fromBlock: block, toBlock: 'latest'}).watch(function (error, event){
 
           if(!error && event.args._user==App.account){
             App.appendNotification("Access Granted", 'Congratulations!\nNow you\'ve access to content '+web3.toUtf8(event.args._content)+".");
@@ -145,7 +145,7 @@ App = {
           }
         });
         
-        instance.PaymentAvailable({}, {fromBlock: initialBlock, toBlock: 'latest'}).watch(function (error, event){
+        instance.PaymentAvailable({}, {fromBlock: block, toBlock: 'latest'}).watch(function (error, event){
           //console.log(event);
           if(!error){
             console.log("Owner: "+event.args._owner);
