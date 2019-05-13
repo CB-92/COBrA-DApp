@@ -105,6 +105,7 @@ App = {
 
   // Listen for events emitted from the contract
   listenForEvents: function () {
+    
     App.contracts.Catalog.deployed().then(async(instance) =>{
 
       // Load user intersts
@@ -117,12 +118,18 @@ App = {
       console.log("Preferences' lenght: "+App.preferences.length);
 
       web3.eth.getBlockNumber(function (error, block) {
+
         var initialBlock = block - App.listeningBlocks;
         if(initialBlock < 0) initialBlock = 0;
+
+        console.log("Blocco corrente: "+block);
+        console.log("Initial block: "+initialBlock);
 
         // Access granted to a content
 
         instance.AccessGranted({}, {fromBlock: block, toBlock: 'latest'}).watch(function (error, event){
+          console.log("Evento AccessGranted registrato:");
+          console.log(event);
 
           if(!error && event.args._user==App.account){
             App.appendNotification("Access Granted", 'Congratulations!\nNow you\'ve access to content '+web3.toUtf8(event.args._content)+".");
@@ -131,22 +138,33 @@ App = {
 
 
         instance.NewLinkedContent({}, {fromBlock: initialBlock, toBlock: 'latest'}).watch(function (error, event){
+          console.log("Evento NewLinkedContent registrato:");
           console.log(event);
 
-          if(!error && (App.preferences.indexOf(event.args._author)!=-1 || App.preferences.indexOf(event.args._genre)!=-1)){
-            App.appendNotification("New Linked Content", "There is a new content matching your interests!");
+          if(!error){
+
+            if(App.preferences.indexOf(event.args._author)!=-1){
+              App.appendNotification("New Linked Content", "There is a new content from "+web3.utils.hexToUtf8(event.args._author)+" !");
+            }
+
+            if(App.preferences.indexOf(event.args._genre)!=-1){
+              App.appendNotification("New Linked Content", "There is a new "+web3.utils.hexToUtf8(event.args._genre)+" content!");
+            }
+
           }
         });
 
         instance.ContentConsumed({}, {fromBlock: block, toBlock: 'latest'}).watch(function (error, event){
+          console.log("Evento ContentConsumed registrato.");
           console.log(event);
           if(App.account == event.args._user){
             App.openFeedbackModal(event.args._content);
           }
         });
         
-        instance.PaymentAvailable({}, {fromBlock: block, toBlock: 'latest'}).watch(function (error, event){
-          //console.log(event);
+        instance.AuthorPayed({}, {fromBlock: block, toBlock: 'latest'}).watch(function (error, event){
+          console.log("Evento AuthorPayed registrato:");
+          console.log(event);
           if(!error){
             console.log("Owner: "+event.args._owner);
             console.log("App account: "+App.account)
@@ -156,7 +174,7 @@ App = {
         });
         
         instance.ClosedCatalog({}, {fromBlock: initialBlock, toBlock: 'latest'}).watch(function (error, event){
-          console.log(event);
+          console.log("Evento ClosedCatalog registrato:\n");
           alert('This catalog has been closed by the owner!');
         });
 
@@ -209,6 +227,9 @@ App = {
   },
 
   render: function () {
+
+    console.log("\n\nCALL TO render FUNCTION!\n\n ");
+
     var catalogInstance;
     var loader = $("#loader");
     var content = $("#content");
@@ -311,7 +332,7 @@ App = {
       alert("An error occured while processing the transaction!");
     });
 
-    App.render();
+    return App.render();
 
   },
 

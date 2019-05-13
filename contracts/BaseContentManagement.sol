@@ -51,7 +51,7 @@ contract BaseContentManagement {
     }
 
     function close() external payable{
-        selfdestruct(catalog.ContentOwner(title));
+        selfdestruct(catalog.GetContentOwner(title));
     }
     
 }

@@ -36,7 +36,7 @@ contract Catalog {
     event AccessGranted(bytes32 _content, address _user);
     event NewLinkedContent(bytes32 _content, bytes32 _author, bytes32 _genre);
     event ContentConsumed(bytes32 _content, address _user);
-    event PaymentAvailable(bytes32 _content, address _owner);
+    event AuthorPayed(bytes32 _content, address _owner);
     event ClosedCatalog();
 
     struct PremiumInfo{
@@ -106,15 +106,6 @@ contract Catalog {
         _;
     }
 
-    /* Check content views */
-    modifier checkViews(bytes32 _content){
-        require(
-            addedContents[_content].viewsSincePayed >= paymentDelay,
-            "No views enough to be payed!"
-        );
-        _;
-    }
-
     /* Check payment value: transaction refused if value < amount and if value > amount */
     modifier costs(uint _amount){
         require(
@@ -156,6 +147,10 @@ contract Catalog {
 
     function NumberOfLinkedContents() external view returns(uint){
         return uint(contentList.length);
+    }
+
+    function GetContentOwner(bytes32 _title) external view returns(address payable){
+        return addedContents[_title].owner;
     }
 
     function LinkToTheCatalog(address payable _owner, bytes32 _title, bytes32 _author, bytes32 _genre, uint _requestedPrice) external {
@@ -416,31 +411,17 @@ contract Catalog {
             if(addedContents[_content].viewsSincePayed >= paymentDelay){
                 addedContents[_content].owner.transfer(addedContents[_content].requestedPrice * (addedContents[_content].averageRating/15));
                 addedContents[_content].viewsSincePayed = addedContents[_content].viewsSincePayed - paymentDelay;
-                emit PaymentAvailable(_content, addedContents[_content].owner);
+                emit AuthorPayed(_content, addedContents[_content].owner);
             }
         }
 
         emit ContentConsumed(_content, _user);
     }
 
-
-    function CollectPayment(bytes32 _content) external checkViews(_content) onlyContent(_content) {
-        /* base value = price*(avg rating / max rating) */
-        msg.sender.transfer(addedContents[_content].requestedPrice * (addedContents[_content].averageRating/15));
-
-        /* #views to be payed = #views since last time - #views payed this time 
-            So no views are are lost between the notification of available payment and collecting the payment */
-        addedContents[_content].viewsSincePayed = addedContents[_content].viewsSincePayed - paymentDelay; 
-    }
-
-    function ContentOwner(bytes32 _content) external view onlyContent(_content) returns(address payable) {
-        return addedContents[_content].authorAddress;
-    }
-
     function CloseCatalog() external onlyCreator{
         for(uint i = 0; i<contentList.length; i++){
             uint toTransfer = address(this).balance * addedContents[contentList[i]].views / allTheViews;
-            addedContents[contentList[i]].authorAddress.transfer(toTransfer);
+            addedContents[contentList[i]].owner.transfer(toTransfer);
             emit ClosedCatalog();
         }
         selfdestruct(creator);
