@@ -553,8 +553,8 @@ App = {
           temp = $("#popularbyauthorinput").val();
           console.log(temp);
 
-          result = await instance.GetLatestByAuthor(web3.toUtf8(temp), { from: App.account });
-          console.log(web3.fromUtf8(result));
+          result = await instance.GetLatestByAuthor(web3.fromUtf8(temp), { from: App.account });
+          console.log(web3.toUtf8(result));
 
           break;
 
@@ -592,7 +592,7 @@ App = {
         case "Author":
           console.log("GetMostRatedByAuthor");
           temp = $("#ratedbyauthorinput").val();
-          result = await instance.GetMostRatedByAuthor(web3.toUtf8(temp), categoryEnum[category],{ from: App.account });
+          result = await instance.GetMostRatedByAuthor(web3.fromUtf8(temp), categoryEnum[category],{ from: App.account });
 
           break;
 

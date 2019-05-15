@@ -44,15 +44,15 @@ module.exports = function (deployer) {
 
         console.log("\nCatalog address is: "+catalogAddress);   
 
-        const title1 = web3.utils.asciiToHex("Per chi suona la campana");
-        const artist1 = web3.utils.asciiToHex("Ernest Hemingway");
-        const encoding1 = web3.utils.asciiToHex("epub");
+        const title1 = web3.utils.utf8ToHex("Per chi suona la campana");
+        const artist1 = web3.utils.utf8ToHex("Ernest Hemingway");
+        const encoding1 = web3.utils.utf8ToHex("epub");
         const price1 = parseInt("20");
         const pages1 = parseInt("547");
 
-        const title2 = web3.utils.asciiToHex("Just Breathe");
-        const artist2 = web3.utils.asciiToHex("Pearl Jam");
-        const encoding2 = web3.utils.asciiToHex("mp3");
+        const title2 = web3.utils.utf8ToHex("Just Breathe");
+        const artist2 = web3.utils.utf8ToHex("Pearl Jam");
+        const encoding2 = web3.utils.utf8ToHex("mp3");
         const price2 = 300;
         const bitrate2 = 320;
         const duration2 = 5;
