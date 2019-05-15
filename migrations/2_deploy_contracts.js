@@ -19,6 +19,14 @@ module.exports = function (deployer) {
 
     deployer.then(async () => {
 
+        // Simple deploy on ropsten
+
+        /*console.log("\n----Deploying Catalog----\n");
+        const catalog = await deployer.deploy(Catalog);*/
+
+
+        // Deploy with some contents on the local blockchain
+
         e = await web3.eth.getAccounts();
         console.log("Accounts:\n" + e);
 
@@ -52,7 +60,7 @@ module.exports = function (deployer) {
         console.log("\n--- Deploying content contract  ---\n")
         const content1 = await deployer.deploy(BookContent, title1, artist1, encoding1, pages1, catalogAddress, price1, {from:author1});
 
-        const content2 = await deployer.deploy(MusicContent, title2, artist2, encoding2, bitrate2, duration2, catalogAddress, price2, {from:author2});
+        const content2 = await deployer.deploy(MusicContent, title2, artist2, encoding2, bitrate2, duration2, catalogAddress, price2, {from:author2});    
 
         
     });

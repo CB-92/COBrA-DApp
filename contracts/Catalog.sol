@@ -97,11 +97,20 @@ contract Catalog {
         _;
     }
 
-    /* Check that the caller is the content */
+    /* Check that the caller is the content contract */
     modifier onlyContent(bytes32 _content){
         require(
             addedContents[_content].authorAddress == msg.sender,
             "Action allowed only for content contract!"  
+        );
+        _;
+    }
+
+    /* Check that the caller is the content contract */
+    modifier onlyContentOwner(bytes32 _content){
+        require(
+            addedContents[_content].owner == msg.sender,
+            "Action allowed only for content creator!"  
         );
         _;
     }
@@ -165,6 +174,24 @@ contract Catalog {
         addedContents[_title].requestedPrice = _requestedPrice;
 
         emit NewLinkedContent(_title, _author, _genre);
+    }
+
+    function DeleteContent(bytes32 _title) external ifLinkedContent(_title) onlyContentOwner(_title){
+        uint j = 0;
+        for (uint i = 0; i < contentList.length; i++){
+            if(contentList[i]==_title){
+                j = i;
+                break;
+            }  
+        }
+        for (uint i = j; i<contentList.length-1; i++){
+            contentList[i] = contentList[i+1];
+        }
+        //If you don't want to leave a gap in the array, you need to move each element manually
+        delete contentList[contentList.length-1];
+        contentList.length--;
+        addedContents[_title].content.close();
+        delete addedContents[_title];
     }
 
     function GetStatistics() external view ifNotEmpty returns (bytes32[] memory, uint[] memory) {

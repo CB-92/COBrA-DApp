@@ -148,7 +148,7 @@ App = {
             }
 
             if(App.preferences.indexOf(event.args._genre)!=-1){
-              App.appendNotification("New Linked Content", "There is a new "+web3.utils.hexToUtf8(event.args._genre)+" content!");
+              App.appendNotification("New Linked Content", "There is a new content matching your interests!");
             }
 
           }
@@ -228,8 +228,6 @@ App = {
 
   render: function () {
 
-    console.log("\n\nCALL TO render FUNCTION!\n\n ");
-
     var catalogInstance;
     var loader = $("#loader");
     var content = $("#content");
@@ -244,8 +242,6 @@ App = {
     web3.eth.getCoinbase(function (err, account) {
       if (err == null) {
         App.account = account;
-        console.log("Your Account: " + account);
-        //$("#accountAddress").html("Your Account: " + account);
       }
     });
 
@@ -281,7 +277,8 @@ App = {
           var contentTemplate = "<li class=\"list-group-item d-flex justify-content-between align-items-center\">"
             + title + "<div class = \"ml-auto\"><a href =\"#\" onclick=\"App.buyContent('"+title+"'); return false;\"><span class=\"fa fa-shopping-cart list-icon\"></span></a>"
             + "<a href=\"#\"><span class=\"fa fa-gift list-icon\" onclick=\"App.openContentModal('"+title+"');return false;\"  ></span></a>"
-            + "<a href=\"#\"><span class=\"fa fa-play list-icon\" onclick=\"App.consumeContent('" + title +"'); return false;\"></span></a>"+"<span class=\"badge badge-primary badge-pill fa fa-eye list-icon\">\t" + contentViews + "</span></div></li>";
+            + "<a href=\"#\"><span class=\"fa fa-play list-icon\" onclick=\"App.consumeContent('" + title +"'); return false;\"></span></a>"+"<a href=\"#\"><span class=\"fa fa-trash list-icon\" onclick=\"App.deleteContent('"+title+"');return false;\"  ></span></a>"
+            +"<span class=\"badge badge-primary badge-pill fa fa-eye list-icon\">\t" + contentViews + "</span></div></li>";
           contents.append(contentTemplate);
         }
       }
@@ -293,10 +290,29 @@ App = {
       content.show();
       console.log('User preferences:');
       for(var i in App.preferences){
-        console.log(web3.toUtf8(App.preferences[i]));
+        console.log(App.preferences[i]);
       }
     }).catch(function (error) {
       console.warn(error);
+    });
+  },
+
+  deleteContent: function(title){
+    App.contracts.Catalog.deployed().then(async (instance) => {
+      await instance.DeleteContent(web3.fromUtf8(title), {from:App.account});
+      App.render();
+    }).catch(function(error){
+      console.log(error);
+      alert(error.message);
+    });
+  },
+
+  closeCatalog: function(){
+    App.contracts.Catalog.deployed().then(async (instance) => {
+      await instance.CloseCatalog({from:App.account});
+
+    }).catch(function(error){
+      console.log(error);
     });
   },
 
@@ -320,20 +336,19 @@ App = {
           
           console.log("You registered and interest for the genre "+temp);
   
-          await instance.AddInterest(web3.fromUtf8(temp), {from:App.account});
+          await instance.AddInterest(genreEnum[temp], {from:App.account});
   
           break;
         default:
           break;
       }
       
+      App.render();
+      
     }).catch(function (error) {
       console.log(error);
       alert("An error occured while processing the transaction!");
     });
-
-    return App.render();
-
   },
 
   selectedGenre: function () {
