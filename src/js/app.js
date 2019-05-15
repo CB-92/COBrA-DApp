@@ -30,7 +30,7 @@ App = {
         });
       } catch(error) {
         console.log("Error in testing new Metamask privacy feature!");
-        console.log(error);
+        alert(error.message);
       }
 
     } else {
@@ -294,6 +294,7 @@ App = {
       }
     }).catch(function (error) {
       console.warn(error);
+      alert(error.message);
     });
   },
 
@@ -313,6 +314,7 @@ App = {
 
     }).catch(function(error){
       console.log(error);
+      alert(error.message);
     });
   },
 
@@ -347,7 +349,7 @@ App = {
       
     }).catch(function (error) {
       console.log(error);
-      alert("An error occured while processing the transaction!");
+      alert(error.message);
     });
   },
 
@@ -420,6 +422,7 @@ App = {
       App.render(); 
     }).catch(function (error) {
       console.log(error);
+      alert(error.message);
     });
   },
 
@@ -433,6 +436,7 @@ App = {
 
     }).catch(function (error) {
       console.log(error);
+      alert(error.message);
     });
   },
 
@@ -456,7 +460,7 @@ App = {
       App.render();
     }).catch(function (error) {
       console.log(error);
-      alert("An error occured while processing the transaction!");
+      alert(error.message);
     });
   },
 
@@ -477,7 +481,7 @@ App = {
       console.log("Content bought!");
     }).catch(function (error) {
       console.log(error);
-      alert("An error occured while processing the transaction!");
+      alert(error.message);
     });
   },
 
@@ -531,7 +535,7 @@ App = {
       list.append(contentTemplate);
     }).catch(function (error) {
       console.log(error);
-      alert("An error occured while processing the transaction!");
+      alert(error.message);
     });
   },
 
@@ -570,7 +574,7 @@ App = {
       list.append(contentTemplate);
     }).catch(function (error) {
       console.log(error);
-      alert("An error occured while processing the transaction!");
+      alert(error.message);
     });
   },
 
@@ -609,7 +613,7 @@ App = {
       list.append(contentTemplate);
     }).catch(function (error) {
       console.log(error);
-      alert("An error occured while processing the transaction!");
+      alert(error.message);
     })
   },
 
@@ -630,6 +634,7 @@ App = {
           App.render();
         }).catch(function (err) {
           console.error(err);
+          alert(error.message);
         });
         break;
       case "Movie":
@@ -642,6 +647,7 @@ App = {
           App.render();
         }).catch(function (err) {
           console.error(err);
+          alert(error.message);
         });
         break;
       case "Music":
@@ -652,6 +658,7 @@ App = {
           App.render();
         }).catch(function (err) {
           console.error(err);
+          alert(error.message);
         });
         break;
       default:
