@@ -447,7 +447,11 @@ contract Catalog {
 
     function CloseCatalog() external onlyCreator{
         for(uint i = 0; i<contentList.length; i++){
-            uint toTransfer = address(this).balance * addedContents[contentList[i]].views / allTheViews;
+            uint toTransfer = 0;
+
+            if(allTheViews > 0)
+                toTransfer = address(this).balance * addedContents[contentList[i]].views / allTheViews;
+
             addedContents[contentList[i]].owner.transfer(toTransfer);
             emit ClosedCatalog();
         }

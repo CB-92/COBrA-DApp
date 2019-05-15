@@ -26,12 +26,18 @@
   </head>
 
   <body>
+
     <nav class="navbar navbar-expand-sm bg-dark navbar-dark">
       <!-- Brand -->
       <a class="navbar-brand" href="#">COBrA</a>
       <ul class="nav navbar-nav ml-auto">
         <li><div id="labelDiv"><span class="badge badge-pill badge-primary premium-label" id="premiumLabel" style="display:none;">Premium user</span></div></li>
+        <li><a id="premiumButton" class="nav-link" href="#" data-toggle="modal" data-target="#premiumModal">Buy or gift a Premium subscription!</a></li>
+        <li><a id="premiumButton" class="nav-link" href="#" data-toggle="modal" data-target="#closeCatalogModal"><span class="fa fa-window-close"></span></a></li>
+
+        <!--
         <li><button type="button" id="premiumButton" class="btn btn-success" data-toggle="modal" data-target="#premiumModal">Buy or gift a Premium subscription!</button></li>
+        <li><button type="button" class="btn-danger" data-toggle="modal" data-target="#closeCatalogModal"><span class="fa fa-window-close"></span></button></li> -->
       </ul>
     </nav>
     <div id="main_container" class="container-fluid">
@@ -326,6 +332,32 @@
             <div class="modal-footer">
               <button type="button" class="btn btn-success" data-dismiss="modal" onclick="App.giftContent(); return false;">Buy</button>
               <button type="button" class="btn btn-danger" data-dismiss="modal">Close</button>
+            </div>
+          
+          </div>
+        </div>
+      </div>
+
+      <!-- Close catalog modal -->
+      <div class="modal" id="closeCatalogModal">
+        <div class="modal-dialog">
+          <div class="modal-content">
+            
+            <!-- Modal Header -->
+            <div class="modal-header">
+              <h4 class="modal-title">Close the Catalog!</h4>
+              <button type="button" class="close" data-dismiss="modal"></button>
+            </div>
+            
+            <!-- Modal body -->
+            <div class="modal-body">
+              <p>Are you sure you want to close this catalog?</p>
+            </div>
+            
+            <!-- Modal footer -->
+            <div class="modal-footer">
+              <button type="button" class="btn btn-success" data-dismiss="modal" onclick="App.closeCatalog(); return false;">Close Catalog</button>
+              <button type="button" class="btn btn-danger" data-dismiss="modal">Cancel</button>
             </div>
           
           </div>
