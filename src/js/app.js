@@ -581,7 +581,7 @@ App = {
   getMostRated: function () {
     var temp = null;
     var result = null;
-    var list = $("#ratedContentList");
+    var list = $("#ratedContentList");  
     list.empty();
     var filter = $("#filterrated option:selected").text();
     var category = $("#category option:selected").val();
@@ -590,17 +590,22 @@ App = {
     App.contracts.Catalog.deployed().then(async (instance) => {
       switch (filter) {
         case "Author":
+          console.log("GetMostRatedByAuthor");
           temp = $("#ratedbyauthorinput").val();
           result = await instance.GetMostRatedByAuthor(web3.toUtf8(temp), categoryEnum[category],{ from: App.account });
 
           break;
 
         case "Genre":
-          temp = $("#popularbygenreinput option:selected").val();
+          console.log("GetMostRatedByGenre");
+          temp = $("#ratedbygenreinput option:selected").val();
+          console.log("Valore genere: "+temp);
+          console.log("Genere: "+genreEnum[temp]+", categoria: "+categoryEnum[category]);
           result = await instance.GetMostRatedByGenre(genreEnum[temp], categoryEnum[category], { from: App.account });
 
           break;
         default:
+          console.log("GetMostRated");
           result = await instance.GetMostRated(categoryEnum[category], {from: App.account});
           break;
       }
@@ -634,7 +639,7 @@ App = {
           App.render();
         }).catch(function (err) {
           console.error(err);
-          alert(error.message);
+          alert(err.message);
         });
         break;
       case "Movie":
@@ -647,7 +652,7 @@ App = {
           App.render();
         }).catch(function (err) {
           console.error(err);
-          alert(error.message);
+          alert(err.message);
         });
         break;
       case "Music":
@@ -658,7 +663,7 @@ App = {
           App.render();
         }).catch(function (err) {
           console.error(err);
-          alert(error.message);
+          alert(err.message);
         });
         break;
       default:
