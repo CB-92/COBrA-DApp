@@ -9,6 +9,22 @@ contract Catalog {
     uint public paymentDelay;
     uint allTheViews;
 
+    constructor() public{
+        creator = msg.sender;
+        /* 1 day = (24 h * 60 min * 60 sec) / 14.93 seconds per block = 53788 blocks */
+        premiumTime = 53788;
+        premiumPrice = 500;
+        paymentDelay = 5;
+        allTheViews = 0;
+        contentList = new bytes32[](0);
+    }
+
+
+    /**********************
+    *** DATA STRUCTURES ***
+    **********************/
+
+
     struct ContentMetadata{
         address payable owner;
         address payable authorAddress;
@@ -21,23 +37,6 @@ contract Catalog {
     }
 
     mapping(bytes32 => ContentMetadata) addedContents;
-
-    constructor() public{
-        creator = msg.sender;
-        /* 1 day = (24 h * 60 min * 60 sec) / 14.93 seconds per block = 53788 blocks */
-        premiumTime = 53788;
-        premiumPrice = 500;
-        paymentDelay = 5;
-        allTheViews = 0;
-        contentList = new bytes32[](0);
-    }
-
-    /* events */
-    event AccessGranted(bytes32 _content, address _user);
-    event NewLinkedContent(bytes32 _content, bytes32 _author, bytes32 _genre);
-    event ContentConsumed(bytes32 _content, address _user);
-    event AuthorPayed(bytes32 _content, address _owner);
-    event ClosedCatalog();
 
     struct PremiumInfo{
         bool isPremium;
@@ -55,12 +54,16 @@ contract Catalog {
     So maximum rating is 5*3=15.
     */
     struct MostRated{
+        // Title of the avg most rated content
         bytes32 average;
         uint averageValue;
+        // Title of the most rated content w.r.t. the "price" category
         bytes32 price;
         uint priceValue;
+        // Title of the most rated content w.r.t. the "quality" category
         bytes32 quality;
         uint qualityValue;
+        // Title of the most rated content w.r.t. the "appreciation" category
         bytes32 appreciation;
         uint appreciationValue;
     }
@@ -69,6 +72,23 @@ contract Catalog {
     mapping (bytes32 => MostRated) authorToMostRated;
     mapping (bytes32 => MostRated) genreToMostRated;
     mapping (address => bytes32[]) userInterests;
+    
+    
+    /*************
+    *** EVENTS ***
+    *************/
+
+    event AccessGranted(bytes32 _content, address _user);
+    event NewLinkedContent(bytes32 _content, bytes32 _author, bytes32 _genre);
+    event ContentConsumed(bytes32 _content, address _user);
+    event AuthorPayed(bytes32 _content, address _owner);
+    event ClosedCatalog();
+
+
+    /****************
+    *** MODIFIERS ***
+    ****************/
+
 
     /* modifier to restrict a functionality only to Premium users */
     modifier restrictToPremium{
@@ -142,6 +162,12 @@ contract Catalog {
         _;
     }
 
+
+    /************************
+    *** UTILITY FUNCTIONS ***
+    ************************/
+
+    
     function getContentPrice(bytes32 _title) external view ifLinkedContent(_title) returns(uint){
         return addedContents[_title].requestedPrice;
     }
@@ -161,6 +187,13 @@ contract Catalog {
     function GetContentOwner(bytes32 _title) external view returns(address payable){
         return addedContents[_title].owner;
     }
+
+
+
+    /******************************
+    *** MANAGE CATALOG CONTENTS ***
+    ******************************/
+
 
     function LinkToTheCatalog(address payable _owner, bytes32 _title, bytes32 _author, bytes32 _genre, uint _requestedPrice) external {
         contentList.push(_title);
@@ -217,6 +250,13 @@ contract Catalog {
         return latests;
     }
 
+
+
+    /*****************
+    *** GET LATEST ***
+    *****************/
+    
+
     function GetLatestByGenre(bytes32 _genre) external view ifNotEmpty returns (bytes32){
         bytes32 tmp;
         for (uint i = contentList.length - 1; i>=0; i--){
@@ -226,19 +266,6 @@ contract Catalog {
             }
             if(i == 0)
                 break;
-        }
-        return tmp;
-    }
-
-    function GetMostPopularByGenre(bytes32 _genre) external view ifNotEmpty returns (bytes32){
-        uint max = 0;
-        bytes32 tmp;
-        for(uint i = 0; i<contentList.length; i++){
-            if(addedContents[contentList[i]].content.genre() == _genre && 
-            addedContents[contentList[i]].views > max){
-                max = addedContents[contentList[i]].views;
-                tmp = contentList[i];
-            }
         }
         return tmp;
     }
@@ -257,6 +284,26 @@ contract Catalog {
 
     }
 
+
+
+    /*******************
+    *** MOST POPULAR ***
+    *******************/
+
+
+    function GetMostPopularByGenre(bytes32 _genre) external view ifNotEmpty returns (bytes32){
+        uint max = 0;
+        bytes32 tmp;
+        for(uint i = 0; i<contentList.length; i++){
+            if(addedContents[contentList[i]].content.genre() == _genre && 
+            addedContents[contentList[i]].views > max){
+                max = addedContents[contentList[i]].views;
+                tmp = contentList[i];
+            }
+        }
+        return tmp;
+    }
+
     function GetMostPopularByAuthor(bytes32 _author) external view ifNotEmpty returns(bytes32){
         uint max = 0;
         bytes32 tmp;
@@ -269,6 +316,11 @@ contract Catalog {
         }
         return tmp;
     }
+
+
+    /*****************
+    *** MOST RATED ***
+    *****************/
 
     /* Returns the title of the most rated content according to a certain category
     (category is "none"  if not specified by the user and returns the average) */
@@ -299,7 +351,12 @@ contract Catalog {
         else return authorToMostRated[_author].price;
     }
 
-    /* Deal with user preferences */
+
+
+    /*********************************
+    *** Deal with user preferences ***
+    *********************************/
+
 
     function AddInterest(bytes32 _interest) external {
         userInterests[msg.sender].push(_interest);
@@ -429,7 +486,7 @@ contract Catalog {
         premiumUsers[msg.sender].blockNum = block.number;
     }
 
-    /* Add views to a content and emit an event if it reaches the views for a payment */
+    /* Add views to a content and pay the owner if it reaches the views for a payment */
     function ConsumedContent(bytes32 _content, address _user) external onlyContent(_content){
         if(IsPremium(_user)==false){
             addedContents[_content].views++;
