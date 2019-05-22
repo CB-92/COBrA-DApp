@@ -70,7 +70,7 @@ contract Catalog {
 
     MostRated mostRated;
     mapping (bytes32 => MostRated) authorToMostRated;
-    mapping (bytes32 => MostRated) genreToMostRated;
+    mapping (uint => MostRated) genreToMostRated;
     mapping (address => bytes32[]) userInterests;
     
     
@@ -79,9 +79,9 @@ contract Catalog {
     *************/
 
     event AccessGranted(bytes32 _content, address _user);
-    event NewLinkedContent(bytes32 _content, bytes32 _author, bytes32 _genre);
+    event NewLinkedContent(bytes32 _content, bytes32 _author, uint _genre);
     event ContentConsumed(bytes32 _content, address _user);
-    event AuthorPayed(bytes32 _content, address _owner);
+    event AuthorPaid(bytes32 _content, address _owner);
     event ClosedCatalog();
 
 
@@ -195,7 +195,7 @@ contract Catalog {
     ******************************/
 
 
-    function LinkToTheCatalog(address payable _owner, bytes32 _title, bytes32 _author, bytes32 _genre, uint _requestedPrice) external {
+    function LinkToTheCatalog(address payable _owner, bytes32 _title, bytes32 _author, uint _genre, uint _requestedPrice) external {
         contentList.push(_title);
         addedContents[_title].authorAddress = msg.sender;
         addedContents[_title].owner = _owner;
@@ -257,7 +257,7 @@ contract Catalog {
     *****************/
     
 
-    function GetLatestByGenre(bytes32 _genre) external view ifNotEmpty returns (bytes32){
+    function GetLatestByGenre(uint _genre) external view ifNotEmpty returns (bytes32){
         bytes32 tmp;
         for (uint i = contentList.length - 1; i>=0; i--){
             if (addedContents[contentList[i]].content.genre() == _genre){
@@ -291,7 +291,7 @@ contract Catalog {
     *******************/
 
 
-    function GetMostPopularByGenre(bytes32 _genre) external view ifNotEmpty returns (bytes32){
+    function GetMostPopularByGenre(uint _genre) external view ifNotEmpty returns (bytes32){
         uint max = 0;
         bytes32 tmp;
         for(uint i = 0; i<contentList.length; i++){
@@ -333,7 +333,7 @@ contract Catalog {
 
     /* Returns the title of the most rated content  with a specific genre according to a certain category
     (category is "none"  if not specified by the user and returns the average) */
-    function GetMostRatedByGenre(bytes32 _genre, uint _category) external view returns(bytes32){
+    function GetMostRatedByGenre(uint _genre, uint _category) external view returns(bytes32){
         if(_category == uint(Category.none)) return genreToMostRated[_genre].average;
         else if (_category == uint(Category.appreciation)) return genreToMostRated[_genre].appreciation;
         else if (_category == uint(Category.quality)) return genreToMostRated[_genre].quality;  
@@ -375,7 +375,7 @@ contract Catalog {
     function LeaveFeedback(bytes32 _content, uint _price, uint _appreciation, uint _quality) external onlyIfConsumed(_content){
         uint average = (_price + _appreciation + _quality) / 3;
         bytes32 author = addedContents[_content].content.author();
-        bytes32 genre = addedContents[_content].content.genre();
+        uint genre = addedContents[_content].content.genre();
         /* for price base value */
         addedContents[_content].averageRating = average;
 
@@ -495,7 +495,7 @@ contract Catalog {
             if(addedContents[_content].viewsSincePayed >= paymentDelay){
                 addedContents[_content].owner.transfer(addedContents[_content].requestedPrice * (addedContents[_content].averageRating/15));
                 addedContents[_content].viewsSincePayed = addedContents[_content].viewsSincePayed - paymentDelay;
-                emit AuthorPayed(_content, addedContents[_content].owner);
+                emit AuthorPaid(_content, addedContents[_content].owner);
             }
         }
 

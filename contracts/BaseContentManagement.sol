@@ -4,7 +4,7 @@ import "./Catalog.sol";
 contract BaseContentManagement {
     bytes32 public title;
     bytes32 public author;
-    bytes32 public genre;
+    uint public genre;
     bytes32[] internal content;
     address internal catalogAddress;
     address payable owner;

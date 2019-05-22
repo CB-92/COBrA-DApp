@@ -18,9 +18,7 @@ App = {
     // TODO: refactor conditional
     if (typeof web3 !== 'undefined') {
       // If a web3 instance is already provided by Meta Mask.
-      //App.web3Provider = web3.currentProvider;
-      //web3 = new Web3(web3.currentProvider);
-      App.web3Provider = window.ethereum; // New standard!!!
+      App.web3Provider = window.ethereum; 
       web3 = new Web3(App.web3Provider);
 
       //
@@ -78,7 +76,7 @@ App = {
 
               premiumGift = false;
               categoryEnum = {"none":0, "appreciation":1, "quality":2, "price":3};
-              genreEnum = { "book": "626f6f6b", "movie": "6d6f766965", "music":"736f6e67"};
+              genreEnum = { "book":0, "movie":1, "music":2};
 
               preferences = [];
               App.listenForEvents();
@@ -109,11 +107,12 @@ App = {
     App.contracts.Catalog.deployed().then(async(instance) =>{
 
       // Load user intersts
-      const interests = await instance.GetInterestsNum();
+      const interests = await instance.GetInterestsNum({from: App.account});
 
       console.log("Numero preferenze: " + interests);
 
-      App.preferences = await instance.GetInterests();
+      const p = await instance.GetInterests({from:App.account});
+      App.preferences = p.map(x => web3.utils.hexToUtf8(x));
 
       console.log("Preferences' lenght: "+App.preferences.length);
 
@@ -127,53 +126,69 @@ App = {
 
         // Access granted to a content
 
-        instance.AccessGranted({}, {fromBlock: block, toBlock: 'latest'}).watch(function (error, event){
+        instance.AccessGranted({fromBlock: block, toBlock: 'latest'}).on('data', (event)=>{
           console.log("Evento AccessGranted registrato:");
           console.log(event);
+          console.log("User: "+event.returnValues._user);
 
-          if(!error && event.args._user==App.account){
-            App.appendNotification("Access Granted", 'Congratulations!\nNow you\'ve access to content '+web3.toUtf8(event.args._content)+".");
+          if(event.returnValues._user==App.account){
+            App.appendNotification("Access Granted", 'Congratulations!\nNow you\'ve access to content '+web3.utils.hexToUtf8(event.returnValues._content)+".");
           }
         });
 
 
-        instance.NewLinkedContent({}, {fromBlock: initialBlock, toBlock: 'latest'}).watch(function (error, event){
+        instance.NewLinkedContent({fromBlock: initialBlock, toBlock: 'latest'}).on('data', (event)=>{
           console.log("Evento NewLinkedContent registrato:");
           console.log(event);
-
-          if(!error){
-
-            if(App.preferences.indexOf(event.args._author)!=-1){
-              App.appendNotification("New Linked Content", "There is a new content from "+web3.utils.hexToUtf8(event.args._author)+" !");
-            }
-
-            if(App.preferences.indexOf(event.args._genre)!=-1){
-              App.appendNotification("New Linked Content", "There is a new content matching your interests!");
-            }
-
+          var temp = null;
+          switch(event.returnValues._genre){
+            case "0":
+              temp = "book";
+              break;
+            case "1":
+              temp = "movie";
+              break;
+            case "2":
+              temp = "music";
+              break;
+            default:
+              break;
           }
+
+          console.log(temp);
+          const author = web3.utils.hexToUtf8(event.returnValues._author);
+          console.log("Author: "+author);
+
+          if(App.preferences.indexOf(author)!=-1){
+            App.appendNotification("New Linked Content", "There is a new content from "+author+"!");  
+          }
+
+          if(App.preferences.indexOf(temp)!=-1){
+            App.appendNotification("New Linked Content", "There is a new content matching your interests!");
+          }
+          
         });
 
-        instance.ContentConsumed({}, {fromBlock: block, toBlock: 'latest'}).watch(function (error, event){
+        instance.ContentConsumed({fromBlock: block, toBlock: 'latest'}).on('data', (event)=>{
           console.log("Evento ContentConsumed registrato.");
           console.log(event);
-          if(App.account == event.args._user){
-            App.openFeedbackModal(event.args._content);
+          if(App.account == event.returnValues._user){
+            App.openFeedbackModal(event.returnValues._content);
           }
         });
         
-        instance.AuthorPayed({}, {fromBlock: block, toBlock: 'latest'}).watch(function (error, event){
+        instance.AuthorPaid({fromBlock: block, toBlock: 'latest'}).on('data', (event)=>{
           console.log("Evento AuthorPayed registrato:");
           console.log(event);
-          if(!error){
-            console.log("Owner: "+event.args._owner);
-            console.log("App account: "+App.account)
 
-            App.appendNotification("Author Payed", 'User '+ event.args._owner +' has been rewarded for content '+web3.toUtf8(event.args._content)+"!");
-          }
+          console.log("Owner: "+event.returnValues._owner);
+          console.log("App account: "+App.account)
+
+          App.appendNotification("Author Paid", 'User '+ event.returnValues._owner +' has been rewarded for content '+web3.utils.hexToUtf8(event.returnValues._content)+"!");
+          
         });
         
-        instance.ClosedCatalog({}, {fromBlock: initialBlock, toBlock: 'latest'}).watch(function (error, event){
+        instance.ClosedCatalog({fromBlock: initialBlock, toBlock: 'latest'}).on('data', (event)=>{
           console.log("Evento ClosedCatalog registrato:\n");
           alert('This catalog has been closed by the owner!');
         });
@@ -241,7 +256,8 @@ App = {
     // Load account data
     web3.eth.getCoinbase(function (err, account) {
       if (err == null) {
-        App.account = account;
+        App.account = web3.utils.toChecksumAddress(account);
+        console.log("App.account: "+App.account);
       }
     });
 
@@ -272,7 +288,7 @@ App = {
         var views = result[1];
         console.log("Views: "+views);
         for (let i = 0; i < linkedContents; i++) {
-          var title = web3.toUtf8(contentList[i]);
+          var title = web3.utils.hexToUtf8(contentList[i]);
           var contentViews = views[i];
           var contentTemplate = "<li class=\"list-group-item d-flex justify-content-between align-items-center\">"
             + title + "<div class = \"ml-auto\"><a href =\"#\" onclick=\"App.buyContent('"+title+"'); return false;\"><span class=\"fa fa-shopping-cart list-icon\"></span></a>"
@@ -288,10 +304,6 @@ App = {
       $('.modal-backdrop').remove();
       loader.hide();
       content.show();
-      console.log('User preferences:');
-      for(var i in App.preferences){
-        console.log(App.preferences[i]);
-      }
     }).catch(function (error) {
       console.warn(error);
       alert(error.message);
@@ -300,7 +312,7 @@ App = {
 
   deleteContent: function(title){
     App.contracts.Catalog.deployed().then(async (instance) => {
-      await instance.DeleteContent(web3.fromUtf8(title), {from:App.account});
+      await instance.DeleteContent(web3.utils.utf8ToHex(title), {from:App.account});
       App.render();
     }).catch(function(error){
       console.log(error);
@@ -327,24 +339,21 @@ App = {
         case "Author":
           var temp = $("#interestbyauthorinput").val();
           
-          console.log("You registered an interest for the author "+temp);
-          
-          await instance.AddInterest(web3.fromUtf8(temp), {from:App.account});
+          await instance.AddInterest(web3.utils.utf8ToHex(temp), {from:App.account});
           
           break;
   
         case "Genre":
           var temp = $("#interestbygenreinput option:selected").val();
-          
-          console.log("You registered and interest for the genre "+temp);
   
-          await instance.AddInterest(genreEnum[temp], {from:App.account});
+          await instance.AddInterest(web3.utils.utf8ToHex(temp), {from:App.account});
   
           break;
         default:
           break;
       }
-      
+
+      console.log("You registered the interest: "+temp);
       App.render();
       
     }).catch(function (error) {
@@ -399,7 +408,7 @@ App = {
     App.contracts.Catalog.deployed().then(async (instance) => {
       const premiumCost = await instance.premiumPrice();
       if (premiumGift) {
-        if(!web3.isAddress(address)){
+        if(!web3.utils.isAddress(address)){
           alert("Wrong address format!");
           $("#premiumGiftPar").hide();
           $("#premiumGiftInput").hide();
@@ -407,12 +416,12 @@ App = {
           return;
         }
         alert("REMINDER: You are buying a premium subscription for "+address+" at the cost of " +
-          web3.fromWei(premiumCost, "ether") + " ether. Confirm or reject the transation on metamask.");
+          web3.utils.fromWei(premiumCost, "ether") + " ether. Confirm or reject the transation on metamask.");
 
         transaction = await instance.GiftPremium(address, { from: App.account, value: premiumCost });
       } else {
         alert("REMINDER: You are buying a premium subscription at the cost of " +
-          web3.fromWei(premiumCost, "ether") + " ether. Confirm or reject the transation on metamask.");
+          web3.utils.fromWei(premiumCost, "ether") + " ether. Confirm or reject the transation on metamask.");
 
         transaction = await instance.BuyPremium({ from: App.account, value: premiumCost });
       }
@@ -428,7 +437,7 @@ App = {
 
   consumeContent: function (title) {
     App.contracts.Catalog.deployed().then(async (instance) => {
-      const address = await instance.GetContentAddress(web3.fromUtf8(title));
+      const address = await instance.GetContentAddress(web3.utils.utf8ToHex(title));
       console.log("Content "+title+" has address "+address);
       const manager = await App.contracts.BaseManager.at(address);
       var content = await manager.consumeContent({from: App.account});
@@ -465,18 +474,20 @@ App = {
   },
 
   buyContent: function(title) {
+    const t = web3.utils.asciiToHex(title);
+    console.log("asciiToHex: "+t);
     App.contracts.Catalog.deployed().then(async (instance) => {
       const isPremium = await instance.IsPremium(App.account);
       if(isPremium){
-        transaction = await instance.GetContentPremium(web3.fromUtf8(title), { from: App.account});
+        transaction = await instance.GetContentPremium(t, { from: App.account});
       } else {
-        const contentCost = await instance.getContentPrice(title);
+        const contentCost = await instance.getContentPrice(t);
         console.log("Prezzo: " + contentCost);
 
         alert("REMINDER: You are buying " + title + " at the cost of " +
-          web3.fromWei(contentCost, "ether") + " ether. Confirm or reject the transation on metamask.");
+          web3.utils.fromWei(contentCost, "ether") + " ether. Confirm or reject the transation on metamask.");
 
-        transaction = await instance.GetContent(web3.fromUtf8(title), { from: App.account, value: contentCost });
+        transaction = await instance.GetContent(t, { from: App.account, value: contentCost });
       }
       console.log("Content bought!");
     }).catch(function (error) {
@@ -488,11 +499,11 @@ App = {
   giftContent: function () {
     var address = $("#giftAddress").val();
     App.contracts.Catalog.deployed().then(async (instance) => {
-      const contentCost = await instance.getContentPrice(contentTitle);
+      const contentCost = await instance.getContentPrice(web3.utils.utf8ToHex(contentTitle));
       console.log("Prezzo: " + contentCost);
       alert("REMINDER: You are buying " + contentTitle + " for "+address+" at the cost of " +
-      web3.fromWei(contentCost, "ether") + " ether. Confirm or reject the transation on metamask.");
-      transaction = await instance.GiftContent(web3.fromUtf8(contentTitle), address, { from: App.account, value: contentCost });
+      web3.utils.fromWei(contentCost, "ether") + " ether. Confirm or reject the transation on metamask.");
+      transaction = await instance.GiftContent(web3.utils.utf8ToHex(contentTitle), address, { from: App.account, value: contentCost });
       console.log("Content bought!");
     }).catch(function (error) {
       console.log(error);
@@ -513,16 +524,19 @@ App = {
         case "Author":
           temp = $("#latestbyauthorinput").val();
           
-          var r = await instance.GetLatestByAuthor(web3.fromUtf8(temp), {from: App.account});
-          result = web3.toUtf8(r);
+          var r = await instance.GetLatestByAuthor(web3.utils.utf8ToHex(temp), {from: App.account});
+          result = web3.utils.hexToUtf8(r);
           console.log(result);
           
           break;
 
         case "Genre":
           temp = $("#latestbygenreinput option:selected").val();
+          console.log(genreEnum[temp]);
           var r = await instance.GetLatestByGenre(genreEnum[temp], { from: App.account });
-          result = web3.toUtf8(r);
+          console.log(r);
+          result = web3.utils.hexToUtf8(r);
+          console.log(result);
               
           break;
         default:
@@ -553,20 +567,21 @@ App = {
           temp = $("#popularbyauthorinput").val();
           console.log(temp);
 
-          result = await instance.GetLatestByAuthor(web3.fromUtf8(temp), { from: App.account });
-          console.log(web3.toUtf8(result));
+          result = await instance.GetLatestByAuthor(web3.utils.utf8ToHex(temp), { from: App.account });
+          console.log(web3.utils.hexToUtf8(result));
 
           break;
 
         case "Genre":
           temp = $("#popularbygenreinput option:selected").val();
           result = await instance.GetMostPopularByGenre(genreEnum[temp], {from: App.account});
+          console.log(web3.utils.hexToUtf8(result));
 
           break;
         default:
           break;
       }
-      var r = web3.toUtf8(result);
+      var r = web3.utils.hexToUtf8(result);
       var contentTemplate = "<li class=\"list-group-item d-flex justify-content-between align-items-center\">"
         + r + "<div class = \"ml-auto\"><a href =\"#\" onclick=\"App.buyContent('" + r + "'); return false;\"><span class=\"fa fa-shopping-cart list-icon\"></span></a>"
         + "<a href=\"#\"><span class=\"fa fa-gift list-icon\" onclick=\"App.openContentModal('" + r + "');return false;\"></span></a>"
@@ -592,7 +607,7 @@ App = {
         case "Author":
           console.log("GetMostRatedByAuthor");
           temp = $("#ratedbyauthorinput").val();
-          result = await instance.GetMostRatedByAuthor(web3.fromUtf8(temp), categoryEnum[category],{ from: App.account });
+          result = await instance.GetMostRatedByAuthor(web3.utils.utf8ToHex(temp), categoryEnum[category],{ from: App.account });
 
           break;
 
@@ -610,7 +625,7 @@ App = {
           break;
       }
 
-      var r = web3.toUtf8(result);
+      var r = web3.utils.hexToUtf8(result);
       var contentTemplate = "<li class=\"list-group-item d-flex justify-content-between align-items-center\">"
         + r + "<div class = \"ml-auto\"><a href =\"#\" onclick=\"App.buyContent('" + r + "'); return false;\"><span class=\"fa fa-shopping-cart list-icon\"></span></a>"
         + "<a href=\"#\"><span class=\"fa fa-gift list-icon\" onclick=\"App.openContentModal('" + r + "');return false;\"></span></a>"
@@ -634,7 +649,7 @@ App = {
     switch(genre){
       case "Book":
         var pages = parseInt($("#pages").val());
-        App.contracts.BookContentManagement.new(web3.fromUtf8(title), web3.fromUtf8(author), web3.fromUtf8(encoding), pages, App.contracts.Catalog.address, price, { from: App.account }
+        App.contracts.BookContentManagement.new(web3.utils.utf8ToHex(title), web3.utils.utf8ToHex(author), web3.utils.utf8ToHex(encoding), pages, App.contracts.Catalog.address, price, { from: App.account }
       ).then(function () {
           App.render();
         }).catch(function (err) {
@@ -647,7 +662,7 @@ App = {
         var duration = parseInt($("#duration").val());
         var width = parseInt($("#width").val());
         var height = parseInt($("#height").val());
-        App.contracts.MovieContentManagement.new(web3.fromUtf8(title), web3.fromUtf8(author), web3.fromUtf8(encoding), bitrate, duration, width, height, App.contracts.Catalog.address, price, { from: App.account }
+        App.contracts.MovieContentManagement.new(web3.utils.utf8ToHex(title), web3.utils.utf8ToHex(author), web3.utils.utf8ToHex(encoding), bitrate, duration, width, height, App.contracts.Catalog.address, price, { from: App.account }
         ).then(function () {
           App.render();
         }).catch(function (err) {
@@ -658,7 +673,7 @@ App = {
       case "Music":
         var bitrate = parseInt($("#bitrate").val());
         var duration = parseInt($("#duration").val());
-        App.contracts.MusicContentManagement.new(web3.fromUtf8(title), web3.fromUtf8(author), web3.fromUtf8(encoding), bitrate, duration, App.contracts.Catalog.address, price, { from: App.account }
+        App.contracts.MusicContentManagement.new(web3.utils.utf8ToHex(title), web3.utils.utf8ToHex(author), web3.utils.utf8ToHex(encoding), bitrate, duration, App.contracts.Catalog.address, price, { from: App.account }
         ).then(function () {
           App.render();
         }).catch(function (err) {

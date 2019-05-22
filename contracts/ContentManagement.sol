@@ -10,7 +10,7 @@ contract BookContentManagement is BaseContentManagement{
     constructor(bytes32 _title, bytes32 _author, bytes32 _encoding, uint _pages, address _catalogAddress, uint _price) public{
         title = _title;
         author = _author;
-        genre = "626f6f6b";
+        genre = 0;
         content.push(_encoding);
         content.push(bytes32(_pages));
         catalogAddress = _catalogAddress;
@@ -31,7 +31,7 @@ contract MovieContentManagement is BaseContentManagement{
     uint _width, uint _height, address _catalogAddress, uint _price) public{
         title = _title;
         author = _author;
-        genre = "6d6f766965";
+        genre = 1;
         content.push(_encoding);
         content.push(bytes32(_bitrate));
         content.push(bytes32(_duration));
@@ -52,7 +52,7 @@ contract MusicContentManagement is BaseContentManagement{
     constructor(bytes32 _title, bytes32 _author, bytes32 _encoding, uint _bitrate, uint _duration, address _catalogAddress, uint _price) public{
         title = _title;
         author = _author;
-        genre = "736f6e67";
+        genre = 2;
         content.push(_encoding);
         content.push(bytes32(_bitrate));
         content.push(bytes32(_duration));
